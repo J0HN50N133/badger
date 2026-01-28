@@ -18,3 +18,15 @@ with each release.
 [Encryption at rest](encryption-at-rest.md)
 
 [Troubleshooting](troubleshooting.md)
+
+## Internal docs
+
+These are implementation-focused docs (source code walkthroughs):
+
+- [Internal mechanics (overview)](internal-mechanics.md)
+- [GC (Value Log GC)](gc.md)
+- [Compaction](compaction.md)
+- [Formats (vlog/sstable)](formats.md)
+- [Scheduling (goroutines/pipelines)](scheduling.md)
+- [MVCC/versioning](mvcc.md)
+
