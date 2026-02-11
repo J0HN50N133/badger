@@ -13,6 +13,7 @@ import (
 	"expvar"
 	"fmt"
 	"math"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
@@ -133,6 +134,14 @@ func checkAndSetOptions(opt *Options) error {
 	if opt.InMemory && (opt.Dir != "" || opt.ValueDir != "") {
 		return errors.New("Cannot use badger in Disk-less mode with Dir or ValueDir set")
 	}
+	if opt.ValueLogOnObjectStorage && opt.InMemory {
+		return errors.New("Cannot enable ValueLogOnObjectStorage in InMemory mode")
+	}
+	if opt.ValueLogOnObjectStorage {
+		if isObjectStorageURL(opt.ValueDir) {
+			return errors.New("ValueDir cannot be an object-storage URL; set ValueDir to a local mount path")
+		}
+	}
 	opt.maxBatchSize = (15 * opt.MemTableSize) / 100
 	opt.maxBatchCount = opt.maxBatchSize / int64(skl.MaxNodeSize)
 
@@ -171,6 +180,11 @@ func checkAndSetOptions(opt *Options) error {
 		panic("BlockCacheSize should be set since compression/encryption are enabled")
 	}
 	return nil
+}
+
+func isObjectStorageURL(path string) bool {
+	u, err := url.Parse(path)
+	return err == nil && u.Scheme != "" && (u.Host != "" || strings.HasPrefix(path, "file://"))
 }
 
 // Open returns a new DB object.
@@ -1236,6 +1250,25 @@ func (db *DB) RunValueLogGC(discardRatio float64) error {
 
 	// Pick a log file and run GC
 	return db.vlog.runGC(discardRatio)
+}
+
+// OffloadValueLogFile uploads a closed vlog file to object storage.
+//
+// When pruneLocal is true, Badger removes the local copy after successful upload.
+// The latest writable vlog file cannot be offloaded.
+func (db *DB) OffloadValueLogFile(fid uint32, pruneLocal bool) error {
+	if db.opt.InMemory {
+		return ErrInvalidRequest
+	}
+	return db.vlog.offloadFid(fid, pruneLocal)
+}
+
+// HydrateValueLogFile downloads a remote vlog file into ValueDir.
+func (db *DB) HydrateValueLogFile(fid uint32) error {
+	if db.opt.InMemory {
+		return ErrInvalidRequest
+	}
+	return db.vlog.hydrateFid(fid)
 }
 
 // Size returns the size of lsm and value log files in bytes. It can be used to decide how often to

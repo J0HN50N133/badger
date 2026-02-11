@@ -111,4 +111,12 @@ var (
 
 	// ErrDBClosed is returned when a get operation is performed after closing the DB.
 	ErrDBClosed = stderrors.New("DB Closed")
+
+	// ErrValueLogFileNotFound is returned when a requested vlog file ID cannot
+	// be found in local or remote metadata.
+	ErrValueLogFileNotFound = stderrors.New("Value log file not found")
+
+	// ErrObjectStoreNotConfigured is returned when object storage mode requires
+	// object-store operations but no object-store client is configured.
+	ErrObjectStoreNotConfigured = stderrors.New("Value log object store is not configured")
 )

@@ -35,6 +35,13 @@ type Options struct {
 
 	Dir      string
 	ValueDir string
+	// ValueLogOnObjectStorage indicates that ValueDir is backed by an object-storage
+	// tiering model. In this mode, Badger can offload/hydrate vlog files via
+	// ValueLogObjectStore, while ValueDir remains a local filesystem directory.
+	ValueLogOnObjectStorage bool
+	// ValueLogObjectStore is the object-store client used by vlog offload/hydrate
+	// operations in object storage mode.
+	ValueLogObjectStore ValueLogObjectStore
 
 	// Usually modified options.
 
@@ -122,8 +129,10 @@ type Options struct {
 // Feel free to modify these to suit your needs with the WithX methods.
 func DefaultOptions(path string) Options {
 	return Options{
-		Dir:      path,
-		ValueDir: path,
+		Dir:                     path,
+		ValueDir:                path,
+		ValueLogOnObjectStorage: false,
+		ValueLogObjectStore:     nil,
 
 		MemTableSize:        64 << 20,
 		BaseTableSize:       2 << 20,
@@ -364,6 +373,23 @@ func (opt Options) WithDir(val string) Options {
 // This is set automatically to be the path given to `DefaultOptions`.
 func (opt Options) WithValueDir(val string) Options {
 	opt.ValueDir = val
+	return opt
+}
+
+// WithValueLogOnObjectStorage returns a new Options value with
+// ValueLogOnObjectStorage set to the given value.
+//
+// When enabled, Badger enables vlog object-store offload/hydrate behavior.
+// ValueDir still uses normal local filesystem semantics.
+func (opt Options) WithValueLogOnObjectStorage(val bool) Options {
+	opt.ValueLogOnObjectStorage = val
+	return opt
+}
+
+// WithValueLogObjectStore returns a new Options value with ValueLogObjectStore
+// set to the given value.
+func (opt Options) WithValueLogObjectStore(store ValueLogObjectStore) Options {
+	opt.ValueLogObjectStore = store
 	return opt
 }
 

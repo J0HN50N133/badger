@@ -8,6 +8,7 @@ package badger
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"hash"
@@ -15,6 +16,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -419,6 +421,12 @@ func (vlog *valueLog) dropAll() (int, error) {
 	if err := deleteAll(); err != nil {
 		return count, err
 	}
+	vlog.filesLock.Lock()
+	vlog.remoteIndex = make(map[uint32]string)
+	vlog.filesLock.Unlock()
+	if err := vlog.persistRemoteIndex(); err != nil {
+		return count, err
+	}
 
 	vlog.db.opt.Infof("Value logs deleted. Creating value log file: 1")
 	if _, err := vlog.createVlogFile(); err != nil { // Called while writes are stopped.
@@ -449,7 +457,11 @@ type valueLog struct {
 
 	garbageCh    chan struct{}
 	discardStats *discardStats
+	// remoteIndex stores fid -> object key for files with a remote copy.
+	remoteIndex map[uint32]string
 }
+
+const vlogRemoteIndexFile = "vlog.remote.index.json"
 
 func vlogFilePath(dirPath string, fid uint32) string {
 	return fmt.Sprintf("%s%s%06d.vlog", dirPath, string(os.PathSeparator), fid)
@@ -457,6 +469,175 @@ func vlogFilePath(dirPath string, fid uint32) string {
 
 func (vlog *valueLog) fpath(fid uint32) string {
 	return vlogFilePath(vlog.dirPath, fid)
+}
+
+func (vlog *valueLog) remoteIndexPath() string {
+	return filepath.Join(vlog.dirPath, vlogRemoteIndexFile)
+}
+
+func (vlog *valueLog) objectKey(fid uint32) string {
+	return fmt.Sprintf("%06d.vlog", fid)
+}
+
+func (vlog *valueLog) loadRemoteIndex() error {
+	vlog.remoteIndex = make(map[uint32]string)
+	path := vlog.remoteIndexPath()
+	data, err := os.ReadFile(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return y.Wrapf(err, "while reading remote index %q", path)
+	}
+
+	var payload struct {
+		Files map[string]string `json:"files"`
+	}
+	if err := json.Unmarshal(data, &payload); err != nil {
+		return y.Wrapf(err, "while unmarshalling remote index %q", path)
+	}
+	for fid, key := range payload.Files {
+		parsed, err := strconv.ParseUint(fid, 10, 32)
+		if err != nil {
+			return y.Wrapf(err, "invalid fid %q in remote index", fid)
+		}
+		vlog.remoteIndex[uint32(parsed)] = key
+	}
+	return nil
+}
+
+func (vlog *valueLog) persistRemoteIndex() error {
+	files := make(map[string]string, len(vlog.remoteIndex))
+	for fid, key := range vlog.remoteIndex {
+		files[strconv.FormatUint(uint64(fid), 10)] = key
+	}
+	data, err := json.Marshal(struct {
+		Files map[string]string `json:"files"`
+	}{Files: files})
+	if err != nil {
+		return y.Wrap(err, "while marshaling remote index")
+	}
+
+	path := vlog.remoteIndexPath()
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, data, 0600); err != nil {
+		return y.Wrapf(err, "while writing remote index %q", tmp)
+	}
+	if err := os.Rename(tmp, path); err != nil {
+		_ = os.Remove(tmp)
+		return y.Wrapf(err, "while replacing remote index %q", path)
+	}
+	return nil
+}
+
+func (vlog *valueLog) hydrateFid(fid uint32) error {
+	if !vlog.opt.ValueLogOnObjectStorage {
+		return ErrInvalidRequest
+	}
+	if vlog.opt.ValueLogObjectStore == nil {
+		return ErrObjectStoreNotConfigured
+	}
+
+	vlog.filesLock.RLock()
+	_, localExists := vlog.filesMap[fid]
+	objectKey, remoteExists := vlog.remoteIndex[fid]
+	vlog.filesLock.RUnlock()
+
+	if localExists {
+		return nil
+	}
+	if !remoteExists {
+		return ErrValueLogFileNotFound
+	}
+
+	dst := vlog.fpath(fid)
+	tmp := dst + ".download"
+	if err := vlog.opt.ValueLogObjectStore.DownloadFile(context.Background(), objectKey, tmp); err != nil {
+		return y.Wrapf(err, "while downloading fid %d from object store", fid)
+	}
+	if err := os.Rename(tmp, dst); err != nil {
+		_ = os.Remove(tmp)
+		return y.Wrapf(err, "while moving downloaded fid %d into place", fid)
+	}
+
+	lf := &logFile{
+		fid:      fid,
+		path:     dst,
+		registry: vlog.db.registry,
+		opt:      vlog.opt,
+	}
+	if err := lf.open(dst, os.O_RDWR, 2*vlog.opt.ValueLogFileSize); err != nil {
+		_ = os.Remove(dst)
+		return y.Wrapf(err, "while opening hydrated vlog fid %d", fid)
+	}
+
+	vlog.filesLock.Lock()
+	if _, ok := vlog.filesMap[fid]; ok {
+		vlog.filesLock.Unlock()
+		_ = lf.Close(-1)
+		return nil
+	}
+	vlog.filesMap[fid] = lf
+	vlog.filesLock.Unlock()
+	return nil
+}
+
+func (vlog *valueLog) offloadFid(fid uint32, pruneLocal bool) error {
+	if !vlog.opt.ValueLogOnObjectStorage {
+		return ErrInvalidRequest
+	}
+	if vlog.opt.ValueLogObjectStore == nil {
+		return ErrObjectStoreNotConfigured
+	}
+
+	vlog.filesLock.RLock()
+	lf, ok := vlog.filesMap[fid]
+	maxFid := vlog.maxFid
+	vlog.filesLock.RUnlock()
+
+	if !ok {
+		return ErrValueLogFileNotFound
+	}
+	if fid >= maxFid {
+		return fmt.Errorf("cannot offload latest writable vlog fid %d", fid)
+	}
+
+	objectKey := vlog.objectKey(fid)
+	if err := vlog.opt.ValueLogObjectStore.UploadFile(context.Background(), lf.path, objectKey); err != nil {
+		return y.Wrapf(err, "while uploading vlog fid %d", fid)
+	}
+
+	vlog.filesLock.Lock()
+	if vlog.remoteIndex == nil {
+		vlog.remoteIndex = make(map[uint32]string)
+	}
+	vlog.remoteIndex[fid] = objectKey
+	vlog.filesLock.Unlock()
+	if err := vlog.persistRemoteIndex(); err != nil {
+		return err
+	}
+
+	if !pruneLocal {
+		return nil
+	}
+
+	vlog.filesLock.Lock()
+	lf, ok = vlog.filesMap[fid]
+	if !ok {
+		vlog.filesLock.Unlock()
+		return nil
+	}
+	if fid >= vlog.maxFid {
+		vlog.filesLock.Unlock()
+		return fmt.Errorf("cannot prune latest writable vlog fid %d", fid)
+	}
+	if vlog.iteratorCount() != 0 {
+		vlog.filesLock.Unlock()
+		return ErrRejected
+	}
+	delete(vlog.filesMap, fid)
+	vlog.filesLock.Unlock()
+	return vlog.deleteLogFile(lf)
 }
 
 func (vlog *valueLog) populateFilesMap() error {
@@ -539,6 +720,7 @@ func (vlog *valueLog) init(db *DB) {
 		return
 	}
 	vlog.dirPath = vlog.opt.ValueDir
+	vlog.remoteIndex = make(map[uint32]string)
 
 	vlog.garbageCh = make(chan struct{}, 1) // Only allow one GC at a time.
 	lf, err := InitDiscardStats(vlog.opt)
@@ -553,6 +735,9 @@ func (vlog *valueLog) open(db *DB) error {
 	// in InMemory mode. InMemory mode doesn't create any files/directories on disk.
 	if db.opt.InMemory {
 		return nil
+	}
+	if err := vlog.loadRemoteIndex(); err != nil {
+		return err
 	}
 
 	if err := vlog.populateFilesMap(); err != nil {
@@ -979,6 +1164,11 @@ func (vlog *valueLog) getUnlockCallback(lf *logFile) func() {
 // logFile unlocking.
 func (vlog *valueLog) readValueBytes(vp valuePointer) ([]byte, *logFile, error) {
 	lf, err := vlog.getFileRLocked(vp)
+	if err != nil && vlog.opt.ValueLogOnObjectStorage {
+		if hErr := vlog.hydrateFid(vp.Fid); hErr == nil {
+			lf, err = vlog.getFileRLocked(vp)
+		}
+	}
 	if err != nil {
 		return nil, nil, err
 	}
