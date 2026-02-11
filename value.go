@@ -339,6 +339,7 @@ func (vlog *valueLog) rewrite(f *logFile) error {
 		}
 		if vlog.iteratorCount() == 0 {
 			delete(vlog.filesMap, f.fid)
+			vlog.policyOnLocalFileDeleted(f.fid)
 			deleteFileNow = true
 		} else {
 			vlog.filesToBeDeleted = append(vlog.filesToBeDeleted, f.fid)
@@ -373,6 +374,7 @@ func (vlog *valueLog) decrIteratorCount() error {
 	for _, id := range vlog.filesToBeDeleted {
 		lfs = append(lfs, vlog.filesMap[id])
 		delete(vlog.filesMap, id)
+		vlog.policyOnLocalFileDeleted(id)
 	}
 	vlog.filesToBeDeleted = nil
 	vlog.filesLock.Unlock()
@@ -412,6 +414,7 @@ func (vlog *valueLog) dropAll() (int, error) {
 			if err := vlog.deleteLogFile(lf); err != nil {
 				return err
 			}
+			vlog.policyOnLocalFileDeleted(lf.fid)
 			count++
 		}
 		vlog.filesMap = make(map[uint32]*logFile)
@@ -477,6 +480,24 @@ func (vlog *valueLog) remoteIndexPath() string {
 
 func (vlog *valueLog) objectKey(fid uint32) string {
 	return fmt.Sprintf("%06d.vlog", fid)
+}
+
+func (vlog *valueLog) policyOnLocalFileCreated(fid uint32) {
+	if p := vlog.opt.ValueLogOffloadPolicy; p != nil {
+		p.OnLocalFileCreated(fid)
+	}
+}
+
+func (vlog *valueLog) policyOnLocalFileRead(fid uint32) {
+	if p := vlog.opt.ValueLogOffloadPolicy; p != nil {
+		p.OnLocalFileRead(fid)
+	}
+}
+
+func (vlog *valueLog) policyOnLocalFileDeleted(fid uint32) {
+	if p := vlog.opt.ValueLogOffloadPolicy; p != nil {
+		p.OnLocalFileDeleted(fid)
+	}
 }
 
 func (vlog *valueLog) loadRemoteIndex() error {
@@ -579,6 +600,7 @@ func (vlog *valueLog) hydrateFid(fid uint32) error {
 	}
 	vlog.filesMap[fid] = lf
 	vlog.filesLock.Unlock()
+	vlog.policyOnLocalFileCreated(fid)
 	return nil
 }
 
@@ -637,6 +659,7 @@ func (vlog *valueLog) offloadFid(fid uint32, pruneLocal bool) error {
 	}
 	delete(vlog.filesMap, fid)
 	vlog.filesLock.Unlock()
+	vlog.policyOnLocalFileDeleted(fid)
 	return vlog.deleteLogFile(lf)
 }
 
@@ -669,6 +692,7 @@ func (vlog *valueLog) populateFilesMap() error {
 			registry: vlog.db.registry,
 		}
 		vlog.filesMap[uint32(fid)] = lf
+		vlog.policyOnLocalFileCreated(uint32(fid))
 		if vlog.maxFid < uint32(fid) {
 			vlog.maxFid = uint32(fid)
 		}
@@ -701,8 +725,46 @@ func (vlog *valueLog) createVlogFile() (*logFile, error) {
 	vlog.writableLogOffset.Store(vlogHeaderSize)
 	vlog.numEntriesWritten = 0
 	vlog.filesLock.Unlock()
+	vlog.policyOnLocalFileCreated(fid)
 
 	return lf, nil
+}
+
+func (vlog *valueLog) snapshotOffloadContext(newWritableFid uint32) ValueLogOffloadContext {
+	vlog.filesLock.RLock()
+	localFids := make([]uint32, 0, len(vlog.filesMap))
+	for fid := range vlog.filesMap {
+		localFids = append(localFids, fid)
+	}
+	maxFid := vlog.maxFid
+	vlog.filesLock.RUnlock()
+	sort.Slice(localFids, func(i, j int) bool { return localFids[i] < localFids[j] })
+
+	return ValueLogOffloadContext{
+		NewWritableFid: newWritableFid,
+		MaxFid:         maxFid,
+		LocalFids:      localFids,
+	}
+}
+
+func (vlog *valueLog) maybeOffloadOnRotate(newWritableFid uint32) {
+	if !vlog.opt.ValueLogOnObjectStorage {
+		return
+	}
+	if vlog.opt.ValueLogObjectStore == nil || vlog.opt.ValueLogOffloadPolicy == nil {
+		return
+	}
+
+	ctx := vlog.snapshotOffloadContext(newWritableFid)
+	decisions := vlog.opt.ValueLogOffloadPolicy.DecideOffload(ctx)
+	for _, d := range decisions {
+		if d.Fid >= ctx.MaxFid {
+			continue
+		}
+		if err := vlog.offloadFid(d.Fid, d.PruneLocal); err != nil {
+			vlog.opt.Warningf("ValueLog offload policy skipped fid %d: %v", d.Fid, err)
+		}
+	}
 }
 
 func errFile(err error, path string, msg string) error {
@@ -769,6 +831,7 @@ func (vlog *valueLog) open(db *DB) error {
 				return y.Wrapf(err, "while trying to delete empty file: %s", lf.path)
 			}
 			delete(vlog.filesMap, fid)
+			vlog.policyOnLocalFileDeleted(fid)
 		}
 	}
 
@@ -1021,6 +1084,7 @@ func (vlog *valueLog) write(reqs []*request) error {
 				return err
 			}
 			curlf = newlf
+			vlog.maybeOffloadOnRotate(newlf.fid)
 		}
 		return nil
 	}
@@ -1172,6 +1236,7 @@ func (vlog *valueLog) readValueBytes(vp valuePointer) ([]byte, *logFile, error) 
 	if err != nil {
 		return nil, nil, err
 	}
+	vlog.policyOnLocalFileRead(vp.Fid)
 
 	buf, err := lf.read(vp)
 	y.NumReadsVlogAdd(vlog.db.opt.MetricsEnabled, 1)

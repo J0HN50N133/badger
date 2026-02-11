@@ -42,6 +42,9 @@ type Options struct {
 	// ValueLogObjectStore is the object-store client used by vlog offload/hydrate
 	// operations in object storage mode.
 	ValueLogObjectStore ValueLogObjectStore
+	// ValueLogOffloadPolicy decides which vlog files should be offloaded when a
+	// new writable vlog file is created.
+	ValueLogOffloadPolicy ValueLogOffloadPolicy
 
 	// Usually modified options.
 
@@ -133,6 +136,7 @@ func DefaultOptions(path string) Options {
 		ValueDir:                path,
 		ValueLogOnObjectStorage: false,
 		ValueLogObjectStore:     nil,
+		ValueLogOffloadPolicy:   nil,
 
 		MemTableSize:        64 << 20,
 		BaseTableSize:       2 << 20,
@@ -390,6 +394,13 @@ func (opt Options) WithValueLogOnObjectStorage(val bool) Options {
 // set to the given value.
 func (opt Options) WithValueLogObjectStore(store ValueLogObjectStore) Options {
 	opt.ValueLogObjectStore = store
+	return opt
+}
+
+// WithValueLogOffloadPolicy returns a new Options value with
+// ValueLogOffloadPolicy set to the given value.
+func (opt Options) WithValueLogOffloadPolicy(policy ValueLogOffloadPolicy) Options {
+	opt.ValueLogOffloadPolicy = policy
 	return opt
 }
 
