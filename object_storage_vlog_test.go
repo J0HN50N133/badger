@@ -118,10 +118,21 @@ func TestCheckAndSetOptionsRejectsURLAsValueDir(t *testing.T) {
 	require.ErrorContains(t, err, "ValueDir cannot be an object-storage URL")
 }
 
-func TestCheckAndSetOptionsAcceptsObjectStorageMode(t *testing.T) {
+func TestCheckAndSetOptionsRejectsObjectStorageModeWithoutObjectStore(t *testing.T) {
 	opt := DefaultOptions("/tmp/badger").
 		WithValueDir("/mnt/object-store-vlog").
 		WithValueLogOnObjectStorage(true)
+
+	err := checkAndSetOptions(&opt)
+	require.Error(t, err)
+	require.ErrorContains(t, err, "ValueLogObjectStore must be configured")
+}
+
+func TestCheckAndSetOptionsAcceptsObjectStorageModeWithObjectStore(t *testing.T) {
+	opt := DefaultOptions("/tmp/badger").
+		WithValueDir("/mnt/object-store-vlog").
+		WithValueLogOnObjectStorage(true).
+		WithValueLogObjectStore(newMemObjectStore())
 
 	require.NoError(t, checkAndSetOptions(&opt))
 }

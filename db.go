@@ -138,6 +138,9 @@ func checkAndSetOptions(opt *Options) error {
 		return errors.New("Cannot enable ValueLogOnObjectStorage in InMemory mode")
 	}
 	if opt.ValueLogOnObjectStorage {
+		if opt.ValueLogObjectStore == nil {
+			return errors.New("ValueLogObjectStore must be configured when ValueLogOnObjectStorage is enabled")
+		}
 		if isObjectStorageURL(opt.ValueDir) {
 			return errors.New("ValueDir cannot be an object-storage URL; set ValueDir to a local mount path")
 		}

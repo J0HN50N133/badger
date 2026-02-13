@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,10 @@ import (
 
 type Config struct {
 	S3Endpoint      string `json:"s3Endpoint"`
+	S3Bucket        string `json:"s3Bucket"`
+	S3Prefix        string `json:"s3Prefix"`
+	S3Region        string `json:"s3Region"`
+	S3UsePathStyle  bool   `json:"s3UsePathStyle"`
 	Dir             string `json:"dir"`
 	ValueDir        string `json:"valueDir"`
 	EvictionPolicy  string `json:"evictionPolicy"`
@@ -32,6 +37,9 @@ func loadConfig(path string) (Config, error) {
 	if cfg.S3Endpoint == "" {
 		return Config{}, errors.New("config field \"s3Endpoint\" is required")
 	}
+	if cfg.S3Bucket == "" {
+		return Config{}, errors.New("config field \"s3Bucket\" is required")
+	}
 	if cfg.Dir != "" && cfg.ValueDir == "" {
 		cfg.ValueDir = cfg.Dir
 	}
@@ -47,6 +55,16 @@ func loadConfig(path string) (Config, error) {
 		return Config{}, errors.New("config field \"keepLocalClosed\" must be >= 0")
 	}
 	return cfg, nil
+}
+
+func buildObjectStore(cfg Config) (badger.ValueLogObjectStore, error) {
+	return badger.NewS3ValueLogObjectStoreWithConfig(context.Background(), badger.S3ValueLogObjectStoreConfig{
+		Bucket:       cfg.S3Bucket,
+		Prefix:       cfg.S3Prefix,
+		Region:       cfg.S3Region,
+		Endpoint:     cfg.S3Endpoint,
+		UsePathStyle: cfg.S3UsePathStyle,
+	})
 }
 
 func buildOffloadPolicy(cfg Config) badger.ValueLogOffloadPolicy {
@@ -92,7 +110,17 @@ func main() {
 		valueDir = dir
 		useTemp = true
 	}
-	opts := badger.DefaultOptions(dir).WithValueDir(valueDir).WithLogger(nil)
+	store, err := buildObjectStore(cfg)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "build s3 object store failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	opts := badger.DefaultOptions(dir).
+		WithValueDir(valueDir).
+		WithValueLogOnObjectStorage(true).
+		WithValueLogObjectStore(store).
+		WithLogger(nil)
 	if policy := buildOffloadPolicy(cfg); policy != nil {
 		opts = opts.WithValueLogOffloadPolicy(policy)
 	}
@@ -136,8 +164,13 @@ func main() {
 
 	fmt.Printf("basic_read_write success\n")
 	fmt.Printf("s3Endpoint=%s\n", cfg.S3Endpoint)
+	fmt.Printf("s3Bucket=%s\n", cfg.S3Bucket)
+	fmt.Printf("s3Prefix=%s\n", cfg.S3Prefix)
+	fmt.Printf("s3Region=%s\n", cfg.S3Region)
+	fmt.Printf("s3UsePathStyle=%t\n", cfg.S3UsePathStyle)
 	fmt.Printf("dir=%s\n", dir)
 	fmt.Printf("valueDir=%s\n", valueDir)
+	fmt.Printf("valueLogOnObjectStorage=%t\n", true)
 	fmt.Printf("evictionPolicy=%s\n", cfg.EvictionPolicy)
 	fmt.Printf("keepLocalClosed=%d\n", cfg.KeepLocalClosed)
 	fmt.Printf("pruneLocal=%t\n", cfg.PruneLocal)
