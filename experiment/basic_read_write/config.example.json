@@ -1,0 +1,8 @@
+{
+    "s3Endpoint": "http://127.0.0.1:9000",
+    "dir": "/tmp/badger-lsm",
+    "valueDir": "/tmp/badger-vlog",
+    "evictionPolicy": "fifo",
+    "keepLocalClosed": 2,
+    "pruneLocal": true
+}

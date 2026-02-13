@@ -296,6 +296,37 @@ func TestHotTierEvictionPolicyFIFO(t *testing.T) {
 	require.Equal(t, []ValueLogOffloadDecision{{Fid: 1, PruneLocal: true}, {Fid: 2, PruneLocal: true}}, decisions)
 }
 
+func TestHotTierEvictionPolicyFIFOUnknownFidsDeterministicAcrossCycles(t *testing.T) {
+	p := &FIFOValueLogOffloadPolicy{
+		KeepLocalClosed: 2,
+		PruneLocal:      true,
+	}
+
+	// First cycle: all fids are unknown to policy (e.g. after recovery).
+	decisions := p.DecideOffload(ValueLogOffloadContext{
+		NewWritableFid: 4,
+		MaxFid:         4,
+		LocalFids:      []uint32{3, 1, 2, 4},
+	})
+	require.Equal(t, []ValueLogOffloadDecision{
+		{Fid: 1, PruneLocal: true},
+	}, decisions)
+	p.OnLocalFileDeleted(1)
+
+	// Second cycle: after rotation, 4 becomes closed and 5 is writable.
+	// FIFO should keep deterministic order for recovered fids and evict 2 next.
+	p.KeepLocalClosed = 2
+	p.OnLocalFileCreated(5)
+	decisions = p.DecideOffload(ValueLogOffloadContext{
+		NewWritableFid: 5,
+		MaxFid:         5,
+		LocalFids:      []uint32{2, 3, 4, 5},
+	})
+	require.Equal(t, []ValueLogOffloadDecision{
+		{Fid: 2, PruneLocal: true},
+	}, decisions)
+}
+
 func TestHotTierEvictionPolicyLRU(t *testing.T) {
 	p := &LRUValueLogOffloadPolicy{
 		KeepLocalClosed: 1,
