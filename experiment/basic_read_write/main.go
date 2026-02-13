@@ -7,8 +7,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	badger "github.com/dgraph-io/badger/v4"
 )
 
@@ -23,6 +27,9 @@ type Config struct {
 	EvictionPolicy  string `json:"evictionPolicy"`
 	KeepLocalClosed int    `json:"keepLocalClosed"`
 	PruneLocal      bool   `json:"pruneLocal"`
+
+	MinIOAccessKey string `json:"minioAccessKey"`
+	MinIOSecretKey string `json:"minioSecretKey"`
 }
 
 func loadConfig(path string) (Config, error) {
@@ -30,10 +37,16 @@ func loadConfig(path string) (Config, error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("read config %q: %w", path, err)
 	}
+	configDir := filepath.Dir(path)
+	if absConfigDir, err := filepath.Abs(configDir); err == nil {
+		configDir = absConfigDir
+	}
+
 	var cfg Config
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		return Config{}, fmt.Errorf("parse config %q: %w", path, err)
 	}
+
 	if cfg.S3Endpoint == "" {
 		return Config{}, errors.New("config field \"s3Endpoint\" is required")
 	}
@@ -46,6 +59,12 @@ func loadConfig(path string) (Config, error) {
 	if cfg.ValueDir != "" && cfg.Dir == "" {
 		cfg.Dir = cfg.ValueDir
 	}
+	if cfg.Dir != "" && !filepath.IsAbs(cfg.Dir) {
+		cfg.Dir = filepath.Clean(filepath.Join(configDir, cfg.Dir))
+	}
+	if cfg.ValueDir != "" && !filepath.IsAbs(cfg.ValueDir) {
+		cfg.ValueDir = filepath.Clean(filepath.Join(configDir, cfg.ValueDir))
+	}
 	switch cfg.EvictionPolicy {
 	case "", "fifo", "lru", "lfu":
 	default:
@@ -55,6 +74,28 @@ func loadConfig(path string) (Config, error) {
 		return Config{}, errors.New("config field \"keepLocalClosed\" must be >= 0")
 	}
 	return cfg, nil
+}
+
+func ensureBucket(ctx context.Context, cfg Config) error {
+	region := strings.TrimSpace(cfg.S3Region)
+	if region == "" {
+		region = "us-east-1"
+	}
+	awsCfg, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(region))
+	if err != nil {
+		return fmt.Errorf("load aws config: %w", err)
+	}
+	client := s3.NewFromConfig(awsCfg, func(o *s3.Options) {
+		o.UsePathStyle = cfg.S3UsePathStyle
+		if endpoint := strings.TrimSpace(cfg.S3Endpoint); endpoint != "" {
+			o.BaseEndpoint = aws.String(endpoint)
+		}
+	})
+	_, err = client.CreateBucket(ctx, &s3.CreateBucketInput{Bucket: aws.String(cfg.S3Bucket)})
+	if err == nil || strings.Contains(err.Error(), "BucketAlreadyOwnedByYou") || strings.Contains(err.Error(), "BucketAlreadyExists") {
+		return nil
+	}
+	return fmt.Errorf("create bucket %q: %w", cfg.S3Bucket, err)
 }
 
 func buildObjectStore(cfg Config) (badger.ValueLogObjectStore, error) {
@@ -101,7 +142,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Default to temp dirs when not explicitly configured.
+	if cfg.MinIOAccessKey != "" {
+		_ = os.Setenv("AWS_ACCESS_KEY_ID", cfg.MinIOAccessKey)
+	}
+	if cfg.MinIOSecretKey != "" {
+		_ = os.Setenv("AWS_SECRET_ACCESS_KEY", cfg.MinIOSecretKey)
+	}
+	if err := ensureBucket(context.Background(), cfg); err != nil {
+		fmt.Fprintf(os.Stderr, "ensure bucket failed: %v\n", err)
+		os.Exit(1)
+	}
+
 	dir := cfg.Dir
 	valueDir := cfg.ValueDir
 	useTemp := false
@@ -120,6 +171,8 @@ func main() {
 		WithValueDir(valueDir).
 		WithValueLogOnObjectStorage(true).
 		WithValueLogObjectStore(store).
+		WithValueThreshold(1).
+		WithValueLogMaxEntries(1).
 		WithLogger(nil)
 	if policy := buildOffloadPolicy(cfg); policy != nil {
 		opts = opts.WithValueLogOffloadPolicy(policy)
@@ -137,19 +190,35 @@ func main() {
 		}
 	}()
 
-	const key = "basic/read_write/key"
-	value := fmt.Sprintf("ok endpoint=%s", cfg.S3Endpoint)
+	const key1 = "basic/read_write/key1"
+	const key2 = "basic/read_write/key2"
+	const key3 = "basic/read_write/key3"
+	value1 := fmt.Sprintf("ok endpoint=%s key=1", cfg.S3Endpoint)
+	value2 := fmt.Sprintf("ok endpoint=%s key=2", cfg.S3Endpoint)
+	value3 := fmt.Sprintf("ok endpoint=%s key=3", cfg.S3Endpoint)
 
 	if err := db.Update(func(txn *badger.Txn) error {
-		return txn.Set([]byte(key), []byte(value))
+		return txn.Set([]byte(key1), []byte(value1))
 	}); err != nil {
-		fmt.Fprintf(os.Stderr, "write failed: %v\n", err)
+		fmt.Fprintf(os.Stderr, "write key1 failed: %v\n", err)
+		os.Exit(1)
+	}
+	if err := db.Update(func(txn *badger.Txn) error {
+		return txn.Set([]byte(key2), []byte(value2))
+	}); err != nil {
+		fmt.Fprintf(os.Stderr, "write key2 failed: %v\n", err)
+		os.Exit(1)
+	}
+	if err := db.Update(func(txn *badger.Txn) error {
+		return txn.Set([]byte(key3), []byte(value3))
+	}); err != nil {
+		fmt.Fprintf(os.Stderr, "write key3 failed: %v\n", err)
 		os.Exit(1)
 	}
 
 	var got string
 	if err := db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get([]byte(key))
+		item, err := txn.Get([]byte(key1))
 		if err != nil {
 			return err
 		}
@@ -158,7 +227,7 @@ func main() {
 			return nil
 		})
 	}); err != nil {
-		fmt.Fprintf(os.Stderr, "read failed: %v\n", err)
+		fmt.Fprintf(os.Stderr, "read key1 failed: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -171,9 +240,10 @@ func main() {
 	fmt.Printf("dir=%s\n", dir)
 	fmt.Printf("valueDir=%s\n", valueDir)
 	fmt.Printf("valueLogOnObjectStorage=%t\n", true)
+	fmt.Printf("autoOffloadPolicy=%s\n", cfg.EvictionPolicy)
 	fmt.Printf("evictionPolicy=%s\n", cfg.EvictionPolicy)
 	fmt.Printf("keepLocalClosed=%d\n", cfg.KeepLocalClosed)
 	fmt.Printf("pruneLocal=%t\n", cfg.PruneLocal)
-	fmt.Printf("key=%s\n", key)
-	fmt.Printf("value=%s\n", got)
+	fmt.Printf("readKey=%s\n", key1)
+	fmt.Printf("readValue=%s\n", got)
 }

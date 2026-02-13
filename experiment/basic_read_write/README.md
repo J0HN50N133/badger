@@ -1,6 +1,7 @@
 # basic_read_write
 
-A minimal experiment binary for basic Badger write/read validation.
+A minimal experiment binary for basic Badger write/read validation with value-log
+object storage enabled.
 
 ## Config
 Pass a JSON file path as the only CLI argument.
@@ -14,6 +15,8 @@ Example `config.json`:
   "s3Prefix": "experiments/basic-rw",
   "s3Region": "us-east-1",
   "s3UsePathStyle": true,
+  "minioAccessKey": "minioadmin",
+  "minioSecretKey": "minioadmin",
   "dir": "/path/to/badger-lsm",
   "valueDir": "/path/to/badger-vlog",
   "evictionPolicy": "fifo",
@@ -22,19 +25,24 @@ Example `config.json`:
 }
 ```
 
-`dir` and `valueDir` are optional. If omitted, the experiment uses a temporary directory.
-If only one of `dir` / `valueDir` is provided, the other is set to the same value.
-`evictionPolicy` is optional and must be one of `fifo`, `lru`, `lfu`.
-`s3Endpoint` and `s3Bucket` are required for S3 object-store injection.
-
 ## Run
 
 ```bash
 go run ./experiment/basic_read_write ./config.json
 ```
 
+Preferred workflow:
+
+```bash
+make -C experiment minio-s3-start
+make -C experiment basic-read-write CONFIG=experiment/basic_read_write/config.example.json
+make -C experiment minio-s3-stop
+# optional cleanup:
+# make -C experiment minio-s3-rm
+```
+
 ## Notes
-- All experiment parameters are loaded from the JSON file.
-- Current required parameters: `s3Endpoint`, `s3Bucket`.
-- Optional parameters: `s3Prefix`, `s3Region`, `s3UsePathStyle`, `dir`, `valueDir`, `evictionPolicy`, `keepLocalClosed`, `pruneLocal`.
-- `s3Endpoint` is currently used as experiment metadata output and embedded in the written value.
+- All experiment parameters are loaded from JSON.
+- Required parameters: `s3Endpoint`, `s3Bucket`.
+- MinIO credentials come from config: `minioAccessKey`, `minioSecretKey`.
+- The experiment writes 3 keys and relies on the configured eviction policy for automatic offload.

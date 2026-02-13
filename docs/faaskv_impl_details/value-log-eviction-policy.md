@@ -13,6 +13,7 @@ It reflects the behavior implemented in:
 - Let each policy own and maintain its own internal state.
 - Keep `valueLog` unaware of policy internals.
 - Trigger offload decisions when vlog rotates (new writable vlog created).
+- Trigger offload decisions after hydrate to enforce hot-tier budget.
 - Keep behavior deterministic across restart/recovery for unknown local fids.
 
 ## Interface
@@ -41,10 +42,18 @@ It reflects the behavior implemented in:
 - On local vlog deletion/prune/drop: `policy.OnLocalFileDeleted(fid)`
 
 ### Decision trigger
-When write path rotates vlog (new writable file created), Badger calls policy:
-1. Build `ValueLogOffloadContext` from local state.
+Badger triggers policy-driven offload in two places:
+1. On rotate (new writable vlog created).
+2. After hydrate (remote file downloaded back to local hot tier).
+
+Both paths use the same best-effort execution flow:
+1. Build `ValueLogOffloadContext` from current local state.
 2. Call `DecideOffload`.
-3. Execute offload decisions best-effort via `offloadFid`.
+3. Execute decisions via `offloadFid`.
+
+Hydrate-specific guard:
+- The just-hydrated fid is skipped for that immediate offload round to avoid
+  download-then-prune thrash on the same read path.
 
 ## Implemented Policies
 
@@ -118,12 +127,14 @@ Example policy wiring:
 
 ## Tests
 Policy behavior and integration are covered by:
-- `TestHotTierEvictionPolicyFIFO`
-- `TestHotTierEvictionPolicyFIFOUnknownFidsDeterministicAcrossCycles`
-- `TestHotTierEvictionPolicyLRU`
-- `TestHotTierEvictionPolicyLFU`
-- `TestAutoOffloadOnRotateE2E`
-- plus offload/hydrate E2E tests
+- [`TestHotTierEvictionPolicyFIFO`](../../object_storage_vlog_test.go#L292)
+- [`TestHotTierEvictionPolicyFIFOUnknownFidsDeterministicAcrossCycles`](../../object_storage_vlog_test.go#L310)
+- [`TestHotTierEvictionPolicyLRU`](../../object_storage_vlog_test.go#L341)
+- [`TestHotTierEvictionPolicyLFU`](../../object_storage_vlog_test.go#L362)
+- [`TestAutoOffloadOnRotateE2E`](../../object_storage_vlog_test.go#L387)
+- [`TestOffloadAndAutoHydrateRead`](../../object_storage_vlog_test.go#L140)
+- [`TestOffloadPruneReopenAutoHydrateE2E`](../../object_storage_vlog_test.go#L189)
+- [`TestHydrateAPIReopenE2E`](../../object_storage_vlog_test.go#L250)
 
 ## Non-goals (current MVP)
 - No persistent policy-state snapshot file.

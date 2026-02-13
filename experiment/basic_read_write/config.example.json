@@ -4,8 +4,10 @@
     "s3Prefix": "experiments/basic-rw",
     "s3Region": "us-east-1",
     "s3UsePathStyle": true,
-    "dir": "/tmp/badger-lsm",
-    "valueDir": "/tmp/badger-vlog",
+    "minioAccessKey": "minioadmin",
+    "minioSecretKey": "minioadmin",
+    "dir": "./badger-lsm",
+    "valueDir": "./badger-vlog",
     "evictionPolicy": "fifo",
     "keepLocalClosed": 2,
     "pruneLocal": true

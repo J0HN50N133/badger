@@ -601,6 +601,10 @@ func (vlog *valueLog) hydrateFid(fid uint32) error {
 	vlog.filesMap[fid] = lf
 	vlog.filesLock.Unlock()
 	vlog.policyOnLocalFileCreated(fid)
+	// Hydrating can temporarily exceed local hot-tier budget; run policy once.
+	// Skip the just-hydrated fid to avoid immediate prune/read thrash.
+	vlog.policyOnLocalFileRead(fid)
+	vlog.maybeOffloadByPolicy(fid, fid, true)
 	return nil
 }
 
@@ -747,7 +751,7 @@ func (vlog *valueLog) snapshotOffloadContext(newWritableFid uint32) ValueLogOffl
 	}
 }
 
-func (vlog *valueLog) maybeOffloadOnRotate(newWritableFid uint32) {
+func (vlog *valueLog) maybeOffloadByPolicy(newWritableFid uint32, skipFid uint32, hasSkip bool) {
 	if !vlog.opt.ValueLogOnObjectStorage {
 		return
 	}
@@ -758,6 +762,9 @@ func (vlog *valueLog) maybeOffloadOnRotate(newWritableFid uint32) {
 	ctx := vlog.snapshotOffloadContext(newWritableFid)
 	decisions := vlog.opt.ValueLogOffloadPolicy.DecideOffload(ctx)
 	for _, d := range decisions {
+		if hasSkip && d.Fid == skipFid {
+			continue
+		}
 		if d.Fid >= ctx.MaxFid {
 			continue
 		}
@@ -765,6 +772,10 @@ func (vlog *valueLog) maybeOffloadOnRotate(newWritableFid uint32) {
 			vlog.opt.Warningf("ValueLog offload policy skipped fid %d: %v", d.Fid, err)
 		}
 	}
+}
+
+func (vlog *valueLog) maybeOffloadOnRotate(newWritableFid uint32) {
+	vlog.maybeOffloadByPolicy(newWritableFid, 0, false)
 }
 
 func errFile(err error, path string, msg string) error {
