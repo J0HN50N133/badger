@@ -13,8 +13,10 @@ Use one directory per test scenario:
 experiment/ycsb/scenarios/
   baseline/
     config.json
+    workload
   my-scenario/
     config.json
+    workload
 ```
 
 `experiment/Makefile` defaults to:
@@ -45,6 +47,13 @@ Key fields in each `config.json`:
 - `extraProperties`
 - `loadProperties`
 - `runProperties`
+
+`workloadFile` supports:
+
+- absolute path
+- path relative to current working directory
+- path relative to the scenario config directory (recommended, for example `workload`)
+- path relative to `goYCSBDir` (backward compatibility)
 
 Badger value log GC properties (set through `extraProperties`):
 
@@ -84,6 +93,16 @@ Select another scenario:
 ```bash
 make -C experiment ycsb-all YCSB_SCENARIO=my-scenario
 ```
+
+Built-in scenarios:
+
+- `baseline` (workload A)
+- `workloada`
+- `workloadb`
+- `workloadc`
+- `workloadd`
+- `workloade`
+- `workloadf`
 
 Override config path directly:
 

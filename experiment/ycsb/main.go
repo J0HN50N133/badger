@@ -27,6 +27,8 @@ type config struct {
 	ExtraProperties map[string]string `json:"extraProperties"`
 	LoadProperties  map[string]string `json:"loadProperties"`
 	RunProperties   map[string]string `json:"runProperties"`
+
+	configDir string
 }
 
 func main() {
@@ -123,7 +125,12 @@ func runCmd(dir string, env []string, name string, args ...string) error {
 }
 
 func loadConfig(path string) (config, error) {
-	buf, err := os.ReadFile(path)
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return config{}, err
+	}
+
+	buf, err := os.ReadFile(absPath)
 	if err != nil {
 		return config{}, err
 	}
@@ -131,6 +138,7 @@ func loadConfig(path string) (config, error) {
 	if err := json.Unmarshal(buf, &cfg); err != nil {
 		return config{}, err
 	}
+	cfg.configDir = filepath.Dir(absPath)
 	if err := cfg.normalizeAndValidate(); err != nil {
 		return config{}, err
 	}
@@ -164,6 +172,18 @@ func (c *config) normalizeAndValidate() error {
 		c.GoModCache = "/tmp/badger-gomodcache"
 	}
 
+	goYCSBDir, err := resolveExistingDir(c.GoYCSBDir, c.configDir)
+	if err != nil {
+		return err
+	}
+	c.GoYCSBDir = goYCSBDir
+
+	workloadPath, err := resolveExistingFile(c.WorkloadFile, c.configDir, c.GoYCSBDir)
+	if err != nil {
+		return err
+	}
+	c.WorkloadFile = workloadPath
+
 	if c.ExtraProperties == nil {
 		c.ExtraProperties = map[string]string{}
 	}
@@ -174,18 +194,56 @@ func (c *config) normalizeAndValidate() error {
 		c.RunProperties = map[string]string{}
 	}
 
-	if fi, err := os.Stat(c.GoYCSBDir); err != nil {
-		return fmt.Errorf("goYCSBDir does not exist: %w", err)
-	} else if !fi.IsDir() {
-		return fmt.Errorf("goYCSBDir is not a directory: %s", c.GoYCSBDir)
-	}
-
-	workloadPath := filepath.Join(c.GoYCSBDir, c.WorkloadFile)
-	if _, err := os.Stat(workloadPath); err != nil {
-		return fmt.Errorf("workload file not found: %s: %w", workloadPath, err)
-	}
-
 	return nil
+}
+
+func resolveExistingDir(path string, bases ...string) (string, error) {
+	abs, fi, err := resolveExistingPath(path, bases...)
+	if err != nil {
+		return "", fmt.Errorf("goYCSBDir not found: %q", path)
+	}
+	if !fi.IsDir() {
+		return "", fmt.Errorf("goYCSBDir is not a directory: %s", abs)
+	}
+	return abs, nil
+}
+
+func resolveExistingFile(path string, bases ...string) (string, error) {
+	abs, fi, err := resolveExistingPath(path, bases...)
+	if err != nil {
+		return "", fmt.Errorf("workload file not found: %q", path)
+	}
+	if fi.IsDir() {
+		return "", fmt.Errorf("workload file is a directory: %s", abs)
+	}
+	return abs, nil
+}
+
+func resolveExistingPath(path string, bases ...string) (string, os.FileInfo, error) {
+	candidates := make([]string, 0, len(bases)+1)
+	if filepath.IsAbs(path) {
+		candidates = append(candidates, path)
+	} else {
+		for _, base := range bases {
+			if base == "" {
+				continue
+			}
+			candidates = append(candidates, filepath.Join(base, path))
+		}
+		candidates = append(candidates, path) // fallback: relative to current working directory.
+	}
+
+	for _, candidate := range candidates {
+		abs, err := filepath.Abs(candidate)
+		if err != nil {
+			continue
+		}
+		fi, err := os.Stat(abs)
+		if err == nil {
+			return abs, fi, nil
+		}
+	}
+	return "", nil, os.ErrNotExist
 }
 
 func mergeProps(dst map[string]string, src map[string]string) {

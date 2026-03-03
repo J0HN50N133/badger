@@ -3,8 +3,8 @@
   "goYCSBBinary": "go-ycsb",
   "workloadFile": "workload",
   "db": "badger",
-  "badgerDir": "/data/badger-ycsb",
-  "badgerValueDir": "/data/badger-ycsb",
+  "badgerDir": "/tmp/badger-ycsb-workloadb",
+  "badgerValueDir": "/tmp/badger-ycsb-workloadb",
   "extraProperties": {
     "measurementtype": "histogram",
     "badger.value_log_gc_interval": "0s",

@@ -8,6 +8,7 @@
 - For `experiment/basic_read_write`, use `experiment/Makefile` targets to drive start/stop/run flows.
 - For `experiment/ycsb`, use `experiment/Makefile` targets: `ycsb-build`, `ycsb-load`, `ycsb-run`, `ycsb-all`.
 - YCSB configs are scenario-based under `experiment/ycsb/scenarios/<scenario>/config.json`, selected by `YCSB_SCENARIO` (default `baseline`) or overridden by `YCSB_CONFIG`.
+- Each YCSB scenario should keep its workload file with the config (for example `experiment/ycsb/scenarios/<scenario>/workload`) and set `workloadFile` accordingly.
 - Make targets can set infrastructure bootstrap knobs (for example image/container name), but experiment behavior parameters MUST still come from the JSON config.
 
 ## Infrastructure Workflow
