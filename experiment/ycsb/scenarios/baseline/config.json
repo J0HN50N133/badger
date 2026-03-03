@@ -8,7 +8,9 @@
   "goCache": "/tmp/badger-gocache",
   "goModCache": "/tmp/badger-gomodcache",
   "extraProperties": {
-    "measurementtype": "histogram"
+    "measurementtype": "histogram",
+    "badger.value_log_gc_interval": "0s",
+    "badger.value_log_gc_discard_ratio": "0.5"
   },
   "loadProperties": {
     "dropdata": "true",

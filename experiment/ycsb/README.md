@@ -5,27 +5,51 @@ Workflow experiment wrapper for running `go-ycsb` against local Badger code.
 This experiment reads all runtime parameters from a JSON config file and provides
 stable `make` targets in `experiment/Makefile`.
 
-## Config
+## Scenario Layout
 
-Pass a JSON file path as the first argument:
+Use one directory per test scenario:
 
 ```bash
-go run ./experiment/ycsb ./experiment/ycsb/config.example.json
+experiment/ycsb/scenarios/
+  baseline/
+    config.json
+  my-scenario/
+    config.json
 ```
 
-Key fields:
+`experiment/Makefile` defaults to:
 
-- `goYCSBDir`: Path to go-ycsb submodule (for this repo, `third_party/go-ycsb`).
-- `goYCSBBinary`: Output binary name produced by build phase.
-- `workloadFile`: Workload file path relative to `goYCSBDir`.
-- `db`: Database backend name (use `badger`).
-- `badgerDir`: LSM directory used by go-ycsb Badger backend.
-- `badgerValueDir`: Value-log directory (defaults to `badgerDir` if empty).
-- `goCache`: GOCACHE value used by build/load/run commands.
-- `goModCache`: GOMODCACHE value used by build/load/run commands.
-- `extraProperties`: Common `-p key=value` properties applied to both phases.
-- `loadProperties`: Extra properties only for `load` phase.
-- `runProperties`: Extra properties only for `run` phase.
+```bash
+YCSB_SCENARIO=baseline
+YCSB_CONFIG=experiment/ycsb/scenarios/$(YCSB_SCENARIO)/config.json
+```
+
+## Config
+
+Pass a scenario config JSON path as the first argument:
+
+```bash
+go run ./experiment/ycsb ./experiment/ycsb/scenarios/baseline/config.json
+```
+
+Key fields in each `config.json`:
+
+- `goYCSBDir`
+- `goYCSBBinary`
+- `workloadFile`
+- `db`
+- `badgerDir`
+- `badgerValueDir`
+- `goCache`
+- `goModCache`
+- `extraProperties`
+- `loadProperties`
+- `runProperties`
+
+Badger value log GC properties (set through `extraProperties`):
+
+- `badger.value_log_gc_interval`: Go duration (`0s` disables GC; default `0s`).
+- `badger.value_log_gc_discard_ratio`: float in `(0,1)` (default `0.5`).
 
 ## Run
 
@@ -33,16 +57,16 @@ Supported phases: `build`, `load`, `run`, `all` (default).
 
 ```bash
 # build + load + run
-go run ./experiment/ycsb ./experiment/ycsb/config.example.json
+go run ./experiment/ycsb ./experiment/ycsb/scenarios/baseline/config.json
 
 # build only
-go run ./experiment/ycsb ./experiment/ycsb/config.example.json build
+go run ./experiment/ycsb ./experiment/ycsb/scenarios/baseline/config.json build
 
 # load only
-go run ./experiment/ycsb ./experiment/ycsb/config.example.json load
+go run ./experiment/ycsb ./experiment/ycsb/scenarios/baseline/config.json load
 
 # run only
-go run ./experiment/ycsb ./experiment/ycsb/config.example.json run
+go run ./experiment/ycsb ./experiment/ycsb/scenarios/baseline/config.json run
 ```
 
 Preferred make workflow:
@@ -55,8 +79,14 @@ make -C experiment ycsb-run
 make -C experiment ycsb-all
 ```
 
-Override config path:
+Select another scenario:
 
 ```bash
-make -C experiment ycsb-all YCSB_CONFIG=experiment/ycsb/config.example.json
+make -C experiment ycsb-all YCSB_SCENARIO=my-scenario
+```
+
+Override config path directly:
+
+```bash
+make -C experiment ycsb-all YCSB_CONFIG=experiment/ycsb/scenarios/my-scenario/config.json
 ```

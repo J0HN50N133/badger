@@ -1,7 +1,9 @@
 # Experiment workflow helper targets.
 
 CONFIG ?= experiment/basic_read_write/config.example.json
-YCSB_CONFIG ?= experiment/ycsb/config.example.json
+YCSB_SCENARIO ?= baseline
+YCSB_SCENARIO_DIR ?= experiment/ycsb/scenarios/$(YCSB_SCENARIO)
+YCSB_CONFIG ?= $(YCSB_SCENARIO_DIR)/config.json
 MINIO_SCRIPT ?= ./scripts/minio_op.sh
 MINIO_HOST ?= 127.0.0.1
 MINIO_S3_PORT ?= 9000
