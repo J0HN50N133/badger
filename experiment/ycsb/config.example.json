@@ -1,0 +1,22 @@
+{
+  "goYCSBDir": "third_party/go-ycsb",
+  "goYCSBBinary": "go-ycsb",
+  "workloadFile": "workloads/workloada",
+  "db": "badger",
+  "badgerDir": "/tmp/badger-ycsb",
+  "badgerValueDir": "/tmp/badger-ycsb",
+  "goCache": "/tmp/badger-gocache",
+  "goModCache": "/tmp/badger-gomodcache",
+  "extraProperties": {
+    "measurementtype": "histogram"
+  },
+  "loadProperties": {
+    "dropdata": "true",
+    "recordcount": "1000000",
+    "threadcount": "16"
+  },
+  "runProperties": {
+    "operationcount": "1000000",
+    "threadcount": "16"
+  }
+}

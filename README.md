@@ -135,6 +135,24 @@ We have run comprehensive benchmarks against RocksDB, Bolt and LMDB. The benchma
 detailed logs for the benchmarks can be found in the [badger-bench] repo. More explanation,
 including graphs can be found the blog posts (linked above).
 
+Badger CLI also provides built-in YCSB-style workloads (A-F):
+
+```sh
+cd badger
+go build .
+./badger benchmark ycsb --dir /tmp/badger-ycsb --workload A --records 1000000 --ops 1000000 -g 16
+```
+
+For upstream YCSB compatibility, we keep a forked `go-ycsb` in
+`third_party/go-ycsb` (git submodule). The submodule itself can point to local
+Badger source via `replace github.com/dgraph-io/badger/v4 => ../..`:
+
+```sh
+git submodule update --init --recursive
+cd third_party/go-ycsb
+go test ./db/badger
+```
+
 [badger-bench]: https://github.com/dgraph-io/badger-bench
 
 ## Projects Using Badger

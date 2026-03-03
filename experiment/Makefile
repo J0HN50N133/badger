@@ -1,6 +1,7 @@
 # Experiment workflow helper targets.
 
 CONFIG ?= experiment/basic_read_write/config.example.json
+YCSB_CONFIG ?= experiment/ycsb/config.example.json
 MINIO_SCRIPT ?= ./scripts/minio_op.sh
 MINIO_HOST ?= 127.0.0.1
 MINIO_S3_PORT ?= 9000
@@ -10,8 +11,11 @@ MINIO_ROOT_PASSWORD ?= minioadmin
 MINIO_BUCKET ?= badger-vlog
 MINIO_IMAGE ?= quay.io/minio/minio:latest
 MINIO_CONTAINER_NAME ?= minio-s3-demo
+EXPERIMENT_GOCACHE ?= /tmp/badger-gocache
+EXPERIMENT_GOMODCACHE ?= /tmp/badger-gomodcache
 
-.PHONY: minio-s3-start minio-s3-stop minio-s3-rm basic-read-write
+.PHONY: minio-s3-start minio-s3-stop minio-s3-rm basic-read-write \
+	ycsb-build ycsb-load ycsb-run ycsb-all
 
 minio-s3-start:
 	@MINIO_HOST=$(MINIO_HOST) \
@@ -47,4 +51,21 @@ minio-s3-rm:
 	$(MINIO_SCRIPT) stop --rm
 
 basic-read-write:
-	@cd .. && GOCACHE=/tmp/badger-gocache go run ./experiment/basic_read_write $(CONFIG)
+	@cd .. && GOCACHE=$(EXPERIMENT_GOCACHE) GOMODCACHE=$(EXPERIMENT_GOMODCACHE) \
+	go run ./experiment/basic_read_write $(CONFIG)
+
+ycsb-build:
+	@cd .. && GOCACHE=$(EXPERIMENT_GOCACHE) GOMODCACHE=$(EXPERIMENT_GOMODCACHE) \
+	go run ./experiment/ycsb $(YCSB_CONFIG) build
+
+ycsb-load:
+	@cd .. && GOCACHE=$(EXPERIMENT_GOCACHE) GOMODCACHE=$(EXPERIMENT_GOMODCACHE) \
+	go run ./experiment/ycsb $(YCSB_CONFIG) load
+
+ycsb-run:
+	@cd .. && GOCACHE=$(EXPERIMENT_GOCACHE) GOMODCACHE=$(EXPERIMENT_GOMODCACHE) \
+	go run ./experiment/ycsb $(YCSB_CONFIG) run
+
+ycsb-all:
+	@cd .. && GOCACHE=$(EXPERIMENT_GOCACHE) GOMODCACHE=$(EXPERIMENT_GOMODCACHE) \
+	go run ./experiment/ycsb $(YCSB_CONFIG) all

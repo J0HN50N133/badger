@@ -6,6 +6,7 @@
 - Experiments MUST NOT hardcode business parameters inside source code.
 - If a required parameter is missing from the JSON file, the experiment MUST fail fast with a clear error message.
 - For `experiment/basic_read_write`, use `experiment/Makefile` targets to drive start/stop/run flows.
+- For `experiment/ycsb`, use `experiment/Makefile` targets: `ycsb-build`, `ycsb-load`, `ycsb-run`, `ycsb-all`.
 - Make targets can set infrastructure bootstrap knobs (for example image/container name), but experiment behavior parameters MUST still come from the JSON config.
 
 ## Infrastructure Workflow

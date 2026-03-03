@@ -70,6 +70,38 @@ go test -v ./...
 cd badger && go install .
 ```
 
+## GO-YCSB WORKFLOW
+Use this when benchmarking local Badger code via the forked `go-ycsb` submodule.
+
+```bash
+# 0) Ensure submodule is present.
+git submodule update --init --recursive
+
+# 1) Modify Badger source in this repo (for example db.go/value.go/options.go), then optionally
+#    do a quick compile check in Badger itself.
+go test ./badger/cmd
+
+# 2) Rebuild go-ycsb (it uses local Badger via:
+#    replace github.com/dgraph-io/badger/v4 => ../.. in third_party/go-ycsb/go.mod)
+go -C third_party/go-ycsb build ./cmd/go-ycsb
+
+# 3) Run YCSB load + run against Badger backend.
+go -C third_party/go-ycsb run ./cmd/go-ycsb load badger \
+  -P workloads/workloada \
+  -p badger.dir=/tmp/badger-ycsb \
+  -p badger.valuedir=/tmp/badger-ycsb
+
+go -C third_party/go-ycsb run ./cmd/go-ycsb run badger \
+  -P workloads/workloada \
+  -p badger.dir=/tmp/badger-ycsb \
+  -p badger.valuedir=/tmp/badger-ycsb
+```
+
+Notes:
+- Rebuild `go-ycsb` after each Badger code change to pick up local modifications.
+- `third_party/go-ycsb` is a git submodule and can have its own commits.
+- For other workloads, replace `workloads/workloada` with `workloadb`/`workloadc`/... .
+
 ## NOTES
 - **WiscKey**: Understanding WiscKey paper is helpful. Keys are small (LSM), Values are large (Vlog).
 - **Vlog GC**: Critical for reclaiming space. Moves valid values to new log files.
