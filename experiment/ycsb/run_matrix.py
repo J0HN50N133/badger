@@ -353,6 +353,7 @@ def main() -> int:
             props["keyprefix"] = args.key_prefix
             props["zeropadding"] = str(zero_padding)
             props["insertorder"] = "ordered"
+            props["requestdistribution"] = "zipfian"
 
             # Value size control.
             props["fieldcount"] = str(args.field_count)
