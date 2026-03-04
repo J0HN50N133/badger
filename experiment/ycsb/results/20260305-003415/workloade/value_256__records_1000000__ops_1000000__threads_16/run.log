@@ -1,0 +1,58 @@
+[ycsb] running run phase
+[exec] /data/ljx/badger/third_party/go-ycsb/go-ycsb [run badger -P /data/ljx/badger/experiment/ycsb/results/20260305-003415/workloade/value_256__records_1000000__ops_1000000__threads_16/workload.generated -p badger.dir=/data/ljx/badger-run/ycsb-lsm/20260305-003415/workloade/value_256__records_1000000__ops_1000000__threads_16 -p badger.value_log_gc_discard_ratio=0.5 -p badger.value_log_gc_interval=0s -p badger.valuedir=/data/ljx/badger-run/ycsb-vlog/20260305-003415/workloade/value_256__records_1000000__ops_1000000__threads_16 -p measurementtype=histogram]
+Using request distribution 'zipfian' a keyrange of [0 1100000]
+badger 2026/03/05 00:40:09 INFO: All 41 tables opened in 2ms
+badger 2026/03/05 00:40:09 INFO: Discard stats nextEmptySlot: 0
+badger 2026/03/05 00:40:09 INFO: Set nextTxnTs to 1000000
+***************** properties *****************
+"readallfields"="true"
+"fieldlength"="256"
+"fieldcount"="1"
+"operationcount"="1000000"
+"badger.value_log_gc_discard_ratio"="0.5"
+"recordcount"="1000000"
+"badger.value_log_gc_interval"="0s"
+"measurementtype"="histogram"
+"maxscanlength"="1"
+"threadcount"="16"
+"readproportion"="0"
+"scanproportion"="0.95"
+"dotransactions"="true"
+"command"="run"
+"fieldlengthdistribution"="constant"
+"zeropadding"="16"
+"requestdistribution"="zipfian"
+"updateproportion"="0"
+"keyprefix"=""
+"insertproportion"="0.05"
+"workload"="core"
+"badger.dir"="/data/ljx/badger-run/ycsb-lsm/20260305-003415/workloade/value_256__records_1000000__ops_1000000__threads_16"
+"insertorder"="ordered"
+"badger.valuedir"="/data/ljx/badger-run/ycsb-vlog/20260305-003415/workloade/value_256__records_1000000__ops_1000000__threads_16"
+"scanlengthdistribution"="uniform"
+"table"="usertable"
+**********************************************
+INSERT - Takes(s): 10.0, Count: 13348, OPS: 1334.6, Avg(us): 52, Min(us): 11, Max(us): 4811, 50th(us): 41, 90th(us): 72, 95th(us): 87, 99th(us): 246, 99.9th(us): 1294, 99.99th(us): 3491
+SCAN   - Takes(s): 10.0, Count: 256244, OPS: 25622.3, Avg(us): 613, Min(us): 8, Max(us): 22479, 50th(us): 289, 90th(us): 1363, 95th(us): 2265, 99th(us): 4959, 99.9th(us): 13215, 99.99th(us): 17359
+TOTAL  - Takes(s): 10.0, Count: 269592, OPS: 26957.2, Avg(us): 586, Min(us): 8, Max(us): 22479, 50th(us): 284, 90th(us): 1307, 95th(us): 2193, 99th(us): 4859, 99.9th(us): 13039, 99.99th(us): 17279
+INSERT - Takes(s): 20.0, Count: 26485, OPS: 1324.1, Avg(us): 54, Min(us): 10, Max(us): 12183, 50th(us): 41, 90th(us): 73, 95th(us): 88, 99th(us): 237, 99.9th(us): 1336, 99.99th(us): 9663
+SCAN   - Takes(s): 20.0, Count: 508376, OPS: 25417.0, Avg(us): 618, Min(us): 8, Max(us): 29471, 50th(us): 288, 90th(us): 1368, 95th(us): 2269, 99th(us): 5047, 99.9th(us): 13455, 99.99th(us): 17935
+TOTAL  - Takes(s): 20.0, Count: 534861, OPS: 26741.4, Avg(us): 590, Min(us): 8, Max(us): 29471, 50th(us): 284, 90th(us): 1312, 95th(us): 2199, 99th(us): 4939, 99.9th(us): 13239, 99.99th(us): 17887
+INSERT - Takes(s): 30.0, Count: 39638, OPS: 1321.2, Avg(us): 54, Min(us): 10, Max(us): 15223, 50th(us): 41, 90th(us): 73, 95th(us): 88, 99th(us): 242, 99.9th(us): 1363, 99.99th(us): 9663
+SCAN   - Takes(s): 30.0, Count: 759129, OPS: 25303.3, Avg(us): 621, Min(us): 8, Max(us): 29471, 50th(us): 288, 90th(us): 1381, 95th(us): 2285, 99th(us): 5059, 99.9th(us): 13007, 99.99th(us): 17567
+TOTAL  - Takes(s): 30.0, Count: 798766, OPS: 26624.5, Avg(us): 593, Min(us): 8, Max(us): 29471, 50th(us): 284, 90th(us): 1322, 95th(us): 2215, 99th(us): 4951, 99.9th(us): 12775, 99.99th(us): 17503
+**********************************************
+Run finished, takes 37.809975057s
+INSERT - Takes(s): 37.8, Count: 49577, OPS: 1311.2, Avg(us): 54, Min(us): 10, Max(us): 15223, 50th(us): 41, 90th(us): 73, 95th(us): 88, 99th(us): 226, 99.9th(us): 1361, 99.99th(us): 5539
+SCAN   - Takes(s): 37.8, Count: 950423, OPS: 25136.3, Avg(us): 622, Min(us): 8, Max(us): 32863, 50th(us): 289, 90th(us): 1388, 95th(us): 2301, 99th(us): 5035, 99.9th(us): 12479, 99.99th(us): 17279
+TOTAL  - Takes(s): 37.8, Count: 1000000, OPS: 26447.5, Avg(us): 593, Min(us): 8, Max(us): 32863, 50th(us): 284, 90th(us): 1329, 95th(us): 2227, 99th(us): 4931, 99.9th(us): 12311, 99.99th(us): 17183
+badger 2026/03/05 00:40:46 INFO: Lifetime L0 stalled for: 0s
+badger 2026/03/05 00:40:46 INFO: 
+Level 0 [ ]: NumTables: 05. Size: 119 MiB of 0 B. Score: 1.00->100.00 StaleData: 0 B Target FileSize: 64 MiB
+Level 1 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 2 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 3 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 4 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 5 [B]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 6 [ ]: NumTables: 37. Size: 69 MiB of 69 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 4.0 MiB
+Level Done

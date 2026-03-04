@@ -1,0 +1,52 @@
+[ycsb] running run phase
+[exec] /data/ljx/badger/third_party/go-ycsb/go-ycsb [run badger -P /data/ljx/badger/experiment/ycsb/results/20260305-003415/workloada/value_256__records_1000000__ops_1000000__threads_16/workload.generated -p badger.dir=/data/ljx/badger-run/ycsb-lsm/20260305-003415/workloada/value_256__records_1000000__ops_1000000__threads_16 -p badger.value_log_gc_discard_ratio=0.5 -p badger.value_log_gc_interval=0s -p badger.valuedir=/data/ljx/badger-run/ycsb-vlog/20260305-003415/workloada/value_256__records_1000000__ops_1000000__threads_16 -p measurementtype=histogram]
+Using request distribution 'zipfian' a keyrange of [0 1000000]
+badger 2026/03/05 00:34:52 INFO: All 41 tables opened in 3ms
+badger 2026/03/05 00:34:52 INFO: Discard stats nextEmptySlot: 0
+badger 2026/03/05 00:34:52 INFO: Set nextTxnTs to 1000000
+***************** properties *****************
+"readallfields"="true"
+"workload"="core"
+"insertproportion"="0"
+"recordcount"="1000000"
+"badger.valuedir"="/data/ljx/badger-run/ycsb-vlog/20260305-003415/workloada/value_256__records_1000000__ops_1000000__threads_16"
+"scanproportion"="0"
+"operationcount"="1000000"
+"readproportion"="0.5"
+"fieldlengthdistribution"="constant"
+"keyprefix"=""
+"table"="usertable"
+"measurementtype"="histogram"
+"requestdistribution"="zipfian"
+"fieldlength"="256"
+"threadcount"="16"
+"command"="run"
+"badger.value_log_gc_discard_ratio"="0.5"
+"fieldcount"="1"
+"badger.value_log_gc_interval"="0s"
+"badger.dir"="/data/ljx/badger-run/ycsb-lsm/20260305-003415/workloada/value_256__records_1000000__ops_1000000__threads_16"
+"zeropadding"="16"
+"updateproportion"="0.5"
+"insertorder"="ordered"
+"dotransactions"="true"
+**********************************************
+READ   - Takes(s): 10.0, Count: 452176, OPS: 45211.7, Avg(us): 123, Min(us): 4, Max(us): 67711, 50th(us): 110, 90th(us): 218, 95th(us): 255, 99th(us): 327, 99.9th(us): 466, 99.99th(us): 1949
+TOTAL  - Takes(s): 10.0, Count: 899464, OPS: 89940.8, Avg(us): 166, Min(us): 4, Max(us): 67839, 50th(us): 147, 90th(us): 291, 95th(us): 340, 99th(us): 441, 99.9th(us): 635, 99.99th(us): 3263
+UPDATE - Takes(s): 10.0, Count: 447288, OPS: 44721.0, Avg(us): 210, Min(us): 17, Max(us): 67839, 50th(us): 190, 90th(us): 335, 95th(us): 381, 99th(us): 479, 99.9th(us): 773, 99.99th(us): 4567
+UPDATE_ERROR - Takes(s): 10.0, Count: 5226, OPS: 522.8, Avg(us): 142, Min(us): 16, Max(us): 1064, 50th(us): 128, 90th(us): 244, 95th(us): 282, 99th(us): 350, 99.9th(us): 466, 99.99th(us): 1043
+**********************************************
+Run finished, takes 11.042614455s
+READ   - Takes(s): 11.0, Count: 499903, OPS: 45266.5, Avg(us): 123, Min(us): 3, Max(us): 67711, 50th(us): 110, 90th(us): 218, 95th(us): 255, 99th(us): 326, 99.9th(us): 460, 99.99th(us): 1959
+TOTAL  - Takes(s): 11.0, Count: 994183, OPS: 90029.0, Avg(us): 166, Min(us): 3, Max(us): 67839, 50th(us): 147, 90th(us): 291, 95th(us): 339, 99th(us): 440, 99.9th(us): 628, 99.99th(us): 3377
+UPDATE - Takes(s): 11.0, Count: 494280, OPS: 44755.5, Avg(us): 209, Min(us): 17, Max(us): 67839, 50th(us): 189, 90th(us): 334, 95th(us): 380, 99th(us): 478, 99.9th(us): 732, 99.99th(us): 5303
+UPDATE_ERROR - Takes(s): 11.0, Count: 5817, OPS: 527.0, Avg(us): 142, Min(us): 10, Max(us): 1064, 50th(us): 128, 90th(us): 244, 95th(us): 280, 99th(us): 350, 99.9th(us): 460, 99.99th(us): 1043
+badger 2026/03/05 00:35:03 INFO: Lifetime L0 stalled for: 0s
+badger 2026/03/05 00:35:03 INFO: 
+Level 0 [ ]: NumTables: 04. Size: 138 MiB of 0 B. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 64 MiB
+Level 1 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 2 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 3 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 4 [B]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 5 [ ]: NumTables: 16. Size: 44 MiB of 13 MiB. Score: 3.48->3.48 StaleData: 0 B Target FileSize: 4.0 MiB
+Level 6 [ ]: NumTables: 68. Size: 128 MiB of 128 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 8.0 MiB
+Level Done
