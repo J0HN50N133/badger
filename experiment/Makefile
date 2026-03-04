@@ -1,6 +1,7 @@
 # Experiment workflow helper targets.
 
 CONFIG ?= experiment/basic_read_write/config.example.json
+QLEARNING_CONFIG ?= experiment/q_learning_savings/config.example.json
 YCSB_SCENARIO ?= baseline
 YCSB_SCENARIO_DIR ?= experiment/ycsb/scenarios/$(YCSB_SCENARIO)
 YCSB_CONFIG ?= $(YCSB_SCENARIO_DIR)/config.json
@@ -17,7 +18,7 @@ EXPERIMENT_GOCACHE ?= /tmp/badger-gocache
 EXPERIMENT_GOMODCACHE ?= /tmp/badger-gomodcache
 
 .PHONY: minio-s3-start minio-s3-stop minio-s3-rm basic-read-write \
-	ycsb-build ycsb-load ycsb-run ycsb-all
+	ycsb-build ycsb-load ycsb-run ycsb-all q-learning-savings
 
 minio-s3-start:
 	@MINIO_HOST=$(MINIO_HOST) \
@@ -71,3 +72,7 @@ ycsb-run:
 ycsb-all:
 	@cd .. && GOCACHE=$(EXPERIMENT_GOCACHE) GOMODCACHE=$(EXPERIMENT_GOMODCACHE) \
 	go run ./experiment/ycsb $(YCSB_CONFIG) all
+
+q-learning-savings:
+	@cd .. && GOCACHE=$(EXPERIMENT_GOCACHE) GOMODCACHE=$(EXPERIMENT_GOMODCACHE) \
+	go run ./experiment/q_learning_savings $(QLEARNING_CONFIG)

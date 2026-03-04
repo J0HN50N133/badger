@@ -16,3 +16,4 @@ badger-test*/
 #darwin
 .DS_Store
 .agents/
+experiment/ycsb/__pycache__

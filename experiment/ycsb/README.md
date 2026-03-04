@@ -78,7 +78,42 @@ Recommended: put `workload` in the scenario folder and set `"workloadFile": "wor
 
 These are passed through to `go-ycsb` via `-p key=value`.
 
-Common keys:
+`workload` file format:
+
+- One property per line: `key=value`
+- `#` starts a comment line
+- No JSON/YAML structure, just flat properties
+
+Priority rule:
+
+1. Properties from `workload` file (`-P`)
+2. Properties passed via `-p key=value`
+
+`-p` overrides the same key from `workload`.
+
+### Workload File Properties
+
+Built-in scenario `workload` files currently use these keys:
+
+| Key | Meaning | Notes |
+|---|---|---|
+| `workload` | Workload implementation name. | Usually `core`. |
+| `recordcount` | Number of initial records. | Used by load and workload generator range. |
+| `operationcount` | Number of operations in run phase. | Total ops across all threads. |
+| `threadcount` | Number of concurrent YCSB workers. | Applies if not overridden in `loadProperties/runProperties`. |
+| `readallfields` | Read all fields in each record. | Usually `true` for standard A-F. |
+| `readproportion` | Fraction of read operations. | Together with other proportions defines mix. |
+| `updateproportion` | Fraction of update operations. | Together with other proportions defines mix. |
+| `insertproportion` | Fraction of insert operations. | Together with other proportions defines mix. |
+| `scanproportion` | Fraction of scan operations. | Together with other proportions defines mix. |
+| `readmodifywriteproportion` | Fraction of read-modify-write operations. | Used by workload F. |
+| `requestdistribution` | Key selection distribution. | Common values: `uniform`, `zipfian`, `latest`. |
+| `maxscanlength` | Upper bound of scan length. | Effective when `scanproportion > 0`. |
+| `scanlengthdistribution` | Distribution for scan length. | Example: `uniform`. |
+
+### Common Override Properties
+
+These are often set in `config.json` as `extraProperties` / phase properties:
 
 | Key | Typical phase | Meaning |
 |---|---|---|
@@ -171,3 +206,34 @@ Override config path directly:
 ```bash
 make -C experiment ycsb-all YCSB_CONFIG=experiment/ycsb/scenarios/my-scenario/config.json
 ```
+
+## Matrix Automation Script
+
+Use `experiment/ycsb/run_matrix.py` to batch-run scenario and parameter matrices.
+
+The script has a `DEFAULTS` block at the top of the file. You can edit those
+defaults directly for your daily runs, then optionally override specific values
+via CLI flags.
+
+Example:
+
+```bash
+python3 experiment/ycsb/run_matrix.py \
+  --scenarios workloada,workloadb,workloadf \
+  --value-sizes 128,256,512,1024 \
+  --recordcount 1000000 \
+  --operationcount 1000000 \
+  --threadcount 16 \
+  --badger-dir-root /data/ycsb-lsm \
+  --badger-value-dir-root /data/ycsb-vlog \
+  --output-dir experiment/ycsb/results
+```
+
+What it does:
+
+- Runs selected scenarios.
+- Fixes key shape to 16B by default (`keyprefix=""`, `zeropadding=16`, `insertorder=ordered`).
+- Sweeps value sizes via `--value-sizes` (`fieldlength`, with `fieldcount=1` and constant distribution).
+- Allows overriding YCSB knobs (`recordcount`, `operationcount`, `threadcount`, and `--ycsb-prop`).
+- Writes generated workload/config/logs under output directory grouped by:
+  `run_id/scenario/value+recordcount+operationcount+threadcount`.
