@@ -1,0 +1,21 @@
+# Generated from scenario workloade
+# value_size=1024
+
+fieldcount=1
+fieldlength=1024
+fieldlengthdistribution=constant
+insertorder=ordered
+insertproportion=0.05
+keyprefix=
+maxscanlength=1
+operationcount=1000000
+readallfields=true
+readproportion=0
+recordcount=1000000
+requestdistribution=zipfian
+scanlengthdistribution=uniform
+scanproportion=0.95
+threadcount=16
+updateproportion=0
+workload=core
+zeropadding=16

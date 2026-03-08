@@ -1,0 +1,110 @@
+{
+  "jobs": [
+    {
+      "scenario": "workloade",
+      "value_size": 1024,
+      "recordcount": "1000000",
+      "operationcount": "1000000",
+      "threadcount": "16",
+      "run_dir": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16",
+      "config_path": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16/config.generated.json",
+      "workload_path": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16/workload.generated",
+      "badger_dir": "/data/ljx/badger-run/ycsb-lsm/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16",
+      "badger_value_dir": "/data/ljx/badger-run/ycsb-vlog/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16",
+      "badger_prefetch_size": "2",
+      "badger_value_log_gc_interval": "0.5s",
+      "badger_value_log_gc_discard_ratio": "0.7"
+    },
+    {
+      "scenario": "workloade",
+      "value_size": 4096,
+      "recordcount": "1000000",
+      "operationcount": "1000000",
+      "threadcount": "16",
+      "run_dir": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16",
+      "config_path": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16/config.generated.json",
+      "workload_path": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16/workload.generated",
+      "badger_dir": "/data/ljx/badger-run/ycsb-lsm/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16",
+      "badger_value_dir": "/data/ljx/badger-run/ycsb-vlog/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16",
+      "badger_prefetch_size": "2",
+      "badger_value_log_gc_interval": "0.5s",
+      "badger_value_log_gc_discard_ratio": "0.7"
+    }
+  ],
+  "runs": [
+    {
+      "type": "build",
+      "config": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16/config.generated.json",
+      "returncode": 0,
+      "duration_seconds": 11.060120105743408
+    },
+    {
+      "type": "load",
+      "scenario": "workloade",
+      "value_size": 1024,
+      "recordcount": "1000000",
+      "operationcount": "1000000",
+      "threadcount": "16",
+      "badger_prefetch_size": "2",
+      "badger_value_log_gc_interval": "0.5s",
+      "badger_value_log_gc_discard_ratio": "0.7",
+      "run_dir": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16",
+      "config": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16/config.generated.json",
+      "workload": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16/workload.generated",
+      "returncode": 0,
+      "duration_seconds": 17.252267122268677,
+      "log": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16/load.log"
+    },
+    {
+      "type": "run",
+      "scenario": "workloade",
+      "value_size": 1024,
+      "recordcount": "1000000",
+      "operationcount": "1000000",
+      "threadcount": "16",
+      "badger_prefetch_size": "2",
+      "badger_value_log_gc_interval": "0.5s",
+      "badger_value_log_gc_discard_ratio": "0.7",
+      "run_dir": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16",
+      "config": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16/config.generated.json",
+      "workload": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16/workload.generated",
+      "returncode": 0,
+      "duration_seconds": 8.433690786361694,
+      "log": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_1024__records_1000000__ops_1000000__threads_16/run.log"
+    },
+    {
+      "type": "load",
+      "scenario": "workloade",
+      "value_size": 4096,
+      "recordcount": "1000000",
+      "operationcount": "1000000",
+      "threadcount": "16",
+      "badger_prefetch_size": "2",
+      "badger_value_log_gc_interval": "0.5s",
+      "badger_value_log_gc_discard_ratio": "0.7",
+      "run_dir": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16",
+      "config": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16/config.generated.json",
+      "workload": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16/workload.generated",
+      "returncode": 0,
+      "duration_seconds": 34.90929627418518,
+      "log": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16/load.log"
+    },
+    {
+      "type": "run",
+      "scenario": "workloade",
+      "value_size": 4096,
+      "recordcount": "1000000",
+      "operationcount": "1000000",
+      "threadcount": "16",
+      "badger_prefetch_size": "2",
+      "badger_value_log_gc_interval": "0.5s",
+      "badger_value_log_gc_discard_ratio": "0.7",
+      "run_dir": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16",
+      "config": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16/config.generated.json",
+      "workload": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16/workload.generated",
+      "returncode": 0,
+      "duration_seconds": 14.633772373199463,
+      "log": "/data/ljx/badger/experiment/ycsb/results/20260308-223254/workloade/value_4096__records_1000000__ops_1000000__threads_16/run.log"
+    }
+  ]
+}

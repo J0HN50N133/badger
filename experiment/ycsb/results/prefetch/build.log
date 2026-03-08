@@ -1,0 +1,2 @@
+[ycsb] building go-ycsb binary
+[exec] go [build -o go-ycsb ./cmd/go-ycsb]
