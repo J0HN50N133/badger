@@ -1,0 +1,13 @@
+{
+  "scenario": "workloade",
+  "value_size": 1024,
+  "recordcount": "1000000",
+  "operationcount": "1000000",
+  "threadcount": "16",
+  "badger_prefetch_size": "1",
+  "badger_value_log_gc_interval": "0.5s",
+  "badger_value_log_gc_discard_ratio": "0.7",
+  "generated_at": "2026-03-09 02:05:22",
+  "workload_file": "/data/ljx/badger/experiment/ycsb/results/20260309-020522/workloade/value_1024__records_1000000__ops_1000000__threads_16/workload.generated",
+  "config_file": "/data/ljx/badger/experiment/ycsb/results/20260309-020522/workloade/value_1024__records_1000000__ops_1000000__threads_16/config.generated.json"
+}

@@ -1,0 +1,52 @@
+[ycsb] running load phase
+[exec] /data/ljx/badger/third_party/go-ycsb/go-ycsb [load badger -P /data/ljx/badger/experiment/ycsb/results/20260309-015508/workloade/value_512__records_1000000__ops_1000000__threads_16/workload.generated -p badger.dir=/data/ljx/badger-run/ycsb-lsm/20260309-015508/workloade/value_512__records_1000000__ops_1000000__threads_16 -p badger.scan_prefetch_size=10 -p badger.value_log_gc_discard_ratio=0.7 -p badger.value_log_gc_interval=0.5s -p badger.valuedir=/data/ljx/badger-run/ycsb-vlog/20260309-015508/workloade/value_512__records_1000000__ops_1000000__threads_16 -p dropdata=true -p measurementtype=histogram]
+Using request distribution 'zipfian' a keyrange of [0 1100000]
+badger 2026/03/09 01:55:48 INFO: All 0 tables opened in 0s
+badger 2026/03/09 01:55:48 INFO: Discard stats nextEmptySlot: 0
+badger 2026/03/09 01:55:48 INFO: Set nextTxnTs to 0
+***************** properties *****************
+"insertproportion"="0.05"
+"updateproportion"="0"
+"zeropadding"="16"
+"requestdistribution"="zipfian"
+"measurementtype"="histogram"
+"badger.value_log_gc_interval"="0.5s"
+"scanproportion"="0.95"
+"insertorder"="ordered"
+"readproportion"="0"
+"badger.scan_prefetch_size"="10"
+"badger.dir"="/data/ljx/badger-run/ycsb-lsm/20260309-015508/workloade/value_512__records_1000000__ops_1000000__threads_16"
+"dropdata"="true"
+"fieldlengthdistribution"="constant"
+"keyprefix"=""
+"maxscanlength"="1"
+"fieldlength"="512"
+"readallfields"="true"
+"operationcount"="1000000"
+"badger.valuedir"="/data/ljx/badger-run/ycsb-vlog/20260309-015508/workloade/value_512__records_1000000__ops_1000000__threads_16"
+"dotransactions"="false"
+"threadcount"="16"
+"fieldcount"="1"
+"table"="usertable"
+"workload"="core"
+"badger.value_log_gc_discard_ratio"="0.7"
+"recordcount"="1000000"
+"command"="load"
+"scanlengthdistribution"="uniform"
+**********************************************
+INSERT - Takes(s): 10.0, Count: 734954, OPS: 73488.0, Avg(us): 194, Min(us): 10, Max(us): 53535, 50th(us): 183, 90th(us): 284, 95th(us): 318, 99th(us): 387, 99.9th(us): 513, 99.99th(us): 27279
+TOTAL  - Takes(s): 10.0, Count: 734954, OPS: 73491.9, Avg(us): 194, Min(us): 10, Max(us): 53535, 50th(us): 183, 90th(us): 284, 95th(us): 318, 99th(us): 387, 99.9th(us): 513, 99.99th(us): 27279
+**********************************************
+Run finished, takes 13.567958653s
+INSERT - Takes(s): 13.6, Count: 1000000, OPS: 73698.3, Avg(us): 193, Min(us): 10, Max(us): 53535, 50th(us): 183, 90th(us): 284, 95th(us): 318, 99th(us): 385, 99.9th(us): 497, 99.99th(us): 27135
+TOTAL  - Takes(s): 13.6, Count: 1000000, OPS: 73701.1, Avg(us): 193, Min(us): 10, Max(us): 53535, 50th(us): 183, 90th(us): 284, 95th(us): 318, 99th(us): 385, 99.9th(us): 497, 99.99th(us): 27135
+badger 2026/03/09 01:56:01 INFO: Lifetime L0 stalled for: 0s
+badger 2026/03/09 01:56:03 INFO: 
+Level 0 [ ]: NumTables: 00. Size: 0 B of 0 B. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 64 MiB
+Level 1 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 2 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 3 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 4 [B]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 5 [ ]: NumTables: 54. Size: 205 MiB of 18 MiB. Score: 11.55->11.55 StaleData: 0 B Target FileSize: 4.0 MiB
+Level 6 [ ]: NumTables: 93. Size: 178 MiB of 178 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 8.0 MiB
+Level Done
