@@ -1,0 +1,63 @@
+[ycsb] running load phase
+[exec] /home/johnsonlee/code/badger/third_party/go-ycsb/go-ycsb [load badger -P /home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204529/workloade/value_1024__records_1000000__ops_1000000__threads_16/workload.generated -p badger.dir=/home/johnsonlee/badger-run/ycsb-lsm/20260308-204529/workloade/value_1024__records_1000000__ops_1000000__threads_16 -p badger.value_log_gc_discard_ratio=0.5 -p badger.value_log_gc_interval=0s -p badger.valuedir=/home/johnsonlee/badger-run/ycsb-vlog/20260308-204529/workloade/value_1024__records_1000000__ops_1000000__threads_16 -p dropdata=true -p measurementtype=histogram]
+Using request distribution 'zipfian' a keyrange of [0 1100000]
+badger 2026/03/08 20:45:30 INFO: All 0 tables opened in 0s
+badger 2026/03/08 20:45:30 INFO: Discard stats nextEmptySlot: 0
+badger 2026/03/08 20:45:30 INFO: Set nextTxnTs to 0
+***************** properties *****************
+"scanproportion"="0.95"
+"fieldlength"="1024"
+"keyprefix"=""
+"badger.dir"="/home/johnsonlee/badger-run/ycsb-lsm/20260308-204529/workloade/value_1024__records_1000000__ops_1000000__threads_16"
+"zeropadding"="16"
+"insertproportion"="0.05"
+"workload"="core"
+"badger.value_log_gc_discard_ratio"="0.5"
+"measurementtype"="histogram"
+"fieldcount"="1"
+"table"="usertable"
+"maxscanlength"="1"
+"updateproportion"="0"
+"readproportion"="0"
+"dotransactions"="false"
+"badger.value_log_gc_interval"="0s"
+"command"="load"
+"fieldlengthdistribution"="constant"
+"requestdistribution"="zipfian"
+"scanlengthdistribution"="uniform"
+"readallfields"="true"
+"operationcount"="1000000"
+"dropdata"="true"
+"threadcount"="16"
+"insertorder"="ordered"
+"recordcount"="1000000"
+"badger.valuedir"="/home/johnsonlee/badger-run/ycsb-vlog/20260308-204529/workloade/value_1024__records_1000000__ops_1000000__threads_16"
+**********************************************
+INSERT - Takes(s): 10.0, Count: 666953, OPS: 66692.9, Avg(us): 195, Min(us): 3, Max(us): 136063, 50th(us): 165, 90th(us): 321, 95th(us): 382, 99th(us): 543, 99.9th(us): 2103, 99.99th(us): 17471
+TOTAL  - Takes(s): 10.0, Count: 666953, OPS: 66690.8, Avg(us): 195, Min(us): 3, Max(us): 136063, 50th(us): 165, 90th(us): 321, 95th(us): 382, 99th(us): 543, 99.9th(us): 2103, 99.99th(us): 17471
+INSERT - Takes(s): 20.0, Count: 738113, OPS: 36905.0, Avg(us): 425, Min(us): 3, Max(us): 7016447, 50th(us): 168, 90th(us): 336, 95th(us): 412, 99th(us): 1002, 99.9th(us): 10607, 99.99th(us): 60863
+TOTAL  - Takes(s): 20.0, Count: 738113, OPS: 36904.5, Avg(us): 425, Min(us): 3, Max(us): 7016447, 50th(us): 168, 90th(us): 336, 95th(us): 412, 99th(us): 1002, 99.9th(us): 10607, 99.99th(us): 60863
+INSERT - Takes(s): 30.0, Count: 909445, OPS: 30314.1, Avg(us): 467, Min(us): 2, Max(us): 7016447, 50th(us): 168, 90th(us): 337, 95th(us): 414, 99th(us): 940, 99.9th(us): 11031, 99.99th(us): 111231
+TOTAL  - Takes(s): 30.0, Count: 909445, OPS: 30313.9, Avg(us): 467, Min(us): 2, Max(us): 7016447, 50th(us): 168, 90th(us): 337, 95th(us): 414, 99th(us): 940, 99.9th(us): 11031, 99.99th(us): 111231
+**********************************************
+Run finished, takes 38.414406001s
+INSERT - Takes(s): 38.4, Count: 1000000, OPS: 26031.8, Avg(us): 606, Min(us): 2, Max(us): 7016447, 50th(us): 167, 90th(us): 341, 95th(us): 422, 99th(us): 1034, 99.9th(us): 12695, 99.99th(us): 135679
+TOTAL  - Takes(s): 38.4, Count: 1000000, OPS: 26031.7, Avg(us): 606, Min(us): 2, Max(us): 7016447, 50th(us): 167, 90th(us): 341, 95th(us): 422, 99th(us): 1034, 99.9th(us): 12695, 99.99th(us): 135679
+badger 2026/03/08 20:46:08 INFO: Lifetime L0 stalled for: 0s
+badger 2026/03/08 20:46:20 INFO: [0] [E] LOG Compact 0->6 (5, 0 -> 123 tables with 1 splits). [00001 00002 00003 00004 00005 . .] -> [00006 00007 00008 00009 00010 00011 00012 00013 00015 00016 00017 00018 00019 00020 00021 00022 00023 00024 00025 00026 00027 00028 00029 00030 00031 00032 00033 00034 00035 00036 00037 00038 00039 00040 00041 00042 00043 00044 00045 00046 00047 00048 00049 00050 00052 00053 00054 00055 00056 00057 00058 00059 00060 00061 00062 00063 00064 00065 00066 00067 00068 00069 00071 00072 00073 00074 00075 00076 00077 00078 00079 00080 00081 00082 00083 00084 00085 00086 00088 00089 00090 00091 00092 00093 00094 00095 00096 00097 00098 00099 00100 00101 00103 00104 00105 00106 00107 00108 00110 00111 00112 00113 00114 00116 00117 00118 00119 00120 00121 00122 00123 00124 00125 00126 00127 00128 00129 00130 00131 00132 00133 00134 00135 .], took 40.386s
+, deleted -198285 bytes
+badger 2026/03/08 20:46:32 INFO: [0] [E] LOG Compact 0->5 (4, 0 -> 50 tables with 1 splits). [00014 00051 00070 00087 . .] -> [00137 00138 00139 00140 00141 00142 00143 00144 00145 00146 00147 00148 00149 00150 00151 00152 00153 00155 00156 00157 00158 00159 00160 00161 00162 00163 00164 00165 00166 00167 00168 00169 00171 00172 00173 00174 00175 00176 00177 00178 00179 00180 00181 00182 00183 00184 00185 00186 00187 00189 .], took 12.936s
+, deleted -134632 bytes
+badger 2026/03/08 20:46:35 INFO: [0] [E] LOG Compact 5->6 (1, 1 -> 1 tables with 1 splits). [00137 . 00135 .] -> [00199 .], took 2.285s
+, deleted 8669 bytes
+badger 2026/03/08 20:46:40 INFO: [1] [E] LOG Compact 0->4 (6, 0 -> 149 tables with 1 splits). [00102 00109 00115 00136 00154 00170 . .] -> [00190 00191 00192 00193 00195 00196 00197 00198 00201 00202 00203 00204 00205 00206 00207 00208 00209 00211 00212 00213 00214 00215 00216 00217 00218 00219 00220 00221 00222 00223 00224 00225 00226 00227 00228 00230 00231 00232 00233 00234 00235 00236 00237 00238 00239 00240 00241 00242 00243 00244 00245 00246 00247 00248 00249 00250 00251 00252 00253 00254 00255 00256 00257 00258 00259 00260 00261 00262 00263 00264 00265 00266 00267 00268 00269 00270 00271 00272 00273 00274 00275 00276 00277 00278 00279 00280 00281 00282 00283 00284 00285 00286 00287 00288 00289 00290 00291 00292 00293 00294 00295 00296 00297 00298 00299 00300 00301 00302 00303 00304 00305 00306 00307 00308 00309 00310 00311 00312 00313 00314 00315 00316 00317 00318 00319 00320 00321 00322 00323 00324 00325 00326 00327 00328 00329 00330 00331 00332 00333 00334 00335 00336 00337 00338 00339 00340 00341 00342 00343 .], took 7.996s
+, deleted 114539 bytes
+badger 2026/03/08 20:46:41 INFO: 
+Level 0 [ ]: NumTables: 02. Size: 72 MiB of 0 B. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 64 MiB
+Level 1 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 2 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 3 [ ]: NumTables: 00. Size: 0 B of 10 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 4 [B]: NumTables: 149. Size: 284 MiB of 10 MiB. Score: 28.41->4.92 StaleData: 0 B Target FileSize: 2.0 MiB
+Level 5 [ ]: NumTables: 41. Size: 156 MiB of 27 MiB. Score: 5.77->5.77 StaleData: 0 B Target FileSize: 4.0 MiB
+Level 6 [ ]: NumTables: 131. Size: 269 MiB of 269 MiB. Score: 0.00->0.00 StaleData: 0 B Target FileSize: 8.0 MiB
+Level Done

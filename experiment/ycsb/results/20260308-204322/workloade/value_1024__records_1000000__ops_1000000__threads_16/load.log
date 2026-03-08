@@ -1,0 +1,6 @@
+[ycsb] running load phase
+[exec] /home/johnsonlee/code/badger/third_party/go-ycsb/go-ycsb [load badger -P /home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16/workload.generated -p badger.dir=/data/ljx/badger-run/ycsb-lsm/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16 -p badger.value_log_gc_discard_ratio=0.5 -p badger.value_log_gc_interval=0s -p badger.valuedir=/data/ljx/badger-run/ycsb-vlog/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16 -p dropdata=true -p measurementtype=histogram]
+Using request distribution 'zipfian' a keyrange of [0 1100000]
+create db badger failed Error Creating Dir: "/data/ljx/badger-run/ycsb-lsm/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16" err: mkdir /data: permission denied
+error: run command /home/johnsonlee/code/badger/third_party/go-ycsb/go-ycsb failed: exit status 1
+exit status 1

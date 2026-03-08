@@ -1,0 +1,53 @@
+{
+  "jobs": [
+    {
+      "scenario": "workloade",
+      "value_size": 1024,
+      "recordcount": "1000000",
+      "operationcount": "1000000",
+      "threadcount": "16",
+      "run_dir": "/home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16",
+      "config_path": "/home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16/config.generated.json",
+      "workload_path": "/home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16/workload.generated",
+      "badger_dir": "/data/ljx/badger-run/ycsb-lsm/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16",
+      "badger_value_dir": "/data/ljx/badger-run/ycsb-vlog/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16",
+      "badger_prefetch_size": null
+    },
+    {
+      "scenario": "workloade",
+      "value_size": 4096,
+      "recordcount": "1000000",
+      "operationcount": "1000000",
+      "threadcount": "16",
+      "run_dir": "/home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_4096__records_1000000__ops_1000000__threads_16",
+      "config_path": "/home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_4096__records_1000000__ops_1000000__threads_16/config.generated.json",
+      "workload_path": "/home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_4096__records_1000000__ops_1000000__threads_16/workload.generated",
+      "badger_dir": "/data/ljx/badger-run/ycsb-lsm/20260308-204322/workloade/value_4096__records_1000000__ops_1000000__threads_16",
+      "badger_value_dir": "/data/ljx/badger-run/ycsb-vlog/20260308-204322/workloade/value_4096__records_1000000__ops_1000000__threads_16",
+      "badger_prefetch_size": null
+    }
+  ],
+  "runs": [
+    {
+      "type": "build",
+      "config": "/home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16/config.generated.json",
+      "returncode": 0,
+      "duration_seconds": 63.44006681442261
+    },
+    {
+      "type": "load",
+      "scenario": "workloade",
+      "value_size": 1024,
+      "recordcount": "1000000",
+      "operationcount": "1000000",
+      "threadcount": "16",
+      "badger_prefetch_size": null,
+      "run_dir": "/home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16",
+      "config": "/home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16/config.generated.json",
+      "workload": "/home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16/workload.generated",
+      "returncode": 1,
+      "duration_seconds": 0.2091078758239746,
+      "log": "/home/johnsonlee/code/badger/experiment/ycsb/results/20260308-204322/workloade/value_1024__records_1000000__ops_1000000__threads_16/load.log"
+    }
+  ]
+}
