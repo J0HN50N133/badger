@@ -1,0 +1,20 @@
+# Generated from scenario workloadf
+# value_size=512
+
+fieldcount=1
+fieldlength=512
+fieldlengthdistribution=constant
+insertorder=ordered
+insertproportion=0
+keyprefix=
+operationcount=1000000
+readallfields=true
+readmodifywriteproportion=0.5
+readproportion=0.5
+recordcount=1000000
+requestdistribution=zipfian
+scanproportion=0
+threadcount=16
+updateproportion=0
+workload=core
+zeropadding=16

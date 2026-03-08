@@ -1,0 +1,18 @@
+{
+  "goYCSBDir": "third_party/go-ycsb",
+  "goYCSBBinary": "go-ycsb",
+  "workloadFile": "/data/ljx/badger/experiment/ycsb/results/20260308-220604/workloade/value_512__records_1000000__ops_1000000__threads_16/workload.generated",
+  "db": "badger",
+  "badgerDir": "/data/ljx/badger-run/ycsb-lsm/20260308-220604/workloade/value_512__records_1000000__ops_1000000__threads_16",
+  "badgerValueDir": "/data/ljx/badger-run/ycsb-vlog/20260308-220604/workloade/value_512__records_1000000__ops_1000000__threads_16",
+  "extraProperties": {
+    "measurementtype": "histogram",
+    "badger.value_log_gc_interval": "0s",
+    "badger.value_log_gc_discard_ratio": "0.5",
+    "badger.scan_prefetch_size": "2"
+  },
+  "loadProperties": {
+    "dropdata": "true"
+  },
+  "runProperties": {}
+}

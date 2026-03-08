@@ -1,0 +1,11 @@
+{
+  "scenario": "workloada",
+  "value_size": 64,
+  "recordcount": "1000000",
+  "operationcount": "1000000",
+  "threadcount": "16",
+  "badger_prefetch_size": "2",
+  "generated_at": "2026-03-08 22:06:04",
+  "workload_file": "/data/ljx/badger/experiment/ycsb/results/20260308-220604/workloada/value_64__records_1000000__ops_1000000__threads_16/workload.generated",
+  "config_file": "/data/ljx/badger/experiment/ycsb/results/20260308-220604/workloada/value_64__records_1000000__ops_1000000__threads_16/config.generated.json"
+}
