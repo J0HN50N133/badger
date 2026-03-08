@@ -50,6 +50,7 @@ DEFAULTS = {
     "key_bytes": 16,
     "key_prefix": "",
     "field_count": 1,
+    "badger_prefetch_size": None,
 }
 
 
@@ -65,6 +66,7 @@ class Job:
     workload_path: Path
     badger_dir: Path
     badger_value_dir: Path
+    badger_prefetch_size: str | None
 
 
 def job_to_json(job: Job) -> Dict[str, object]:
@@ -140,6 +142,15 @@ def parse_args() -> argparse.Namespace:
         action="append",
         default=[],
         help="Badger extra property override KEY=VALUE into extraProperties. Repeatable.",
+    )
+    parser.add_argument(
+        "--badger-prefetch-size",
+        type=int,
+        default=DEFAULTS["badger_prefetch_size"],
+        help=(
+            "Set badger.scan_prefetch_size for SCAN iterator prefetching "
+            "(default: keep scenario/default setting)."
+        ),
     )
     parser.add_argument(
         "--badger-dir-root",
@@ -315,6 +326,9 @@ def main() -> int:
     if args.key_bytes <= 0:
         raise ValueError("--key-bytes must be > 0")
 
+    if args.badger_prefetch_size is not None and args.badger_prefetch_size <= 0:
+        raise ValueError("--badger-prefetch-size must be > 0")
+
     if len(args.key_prefix.encode("utf-8")) >= args.key_bytes:
         raise ValueError("--key-prefix byte length must be less than --key-bytes")
 
@@ -400,6 +414,10 @@ def main() -> int:
             if not isinstance(job_cfg["extraProperties"], dict):
                 raise ValueError(f"{cfg_path}: extraProperties must be object")
             job_cfg["extraProperties"].update(badger_overrides)
+            if args.badger_prefetch_size is not None:
+                job_cfg["extraProperties"]["badger.scan_prefetch_size"] = str(
+                    args.badger_prefetch_size
+                )
 
             job_cfg.setdefault("loadProperties", {})
             if not isinstance(job_cfg["loadProperties"], dict):
@@ -419,6 +437,9 @@ def main() -> int:
                 "recordcount": recordcount,
                 "operationcount": operationcount,
                 "threadcount": threadcount,
+                "badger_prefetch_size": job_cfg["extraProperties"].get(
+                    "badger.scan_prefetch_size"
+                ),
                 "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "workload_file": str(generated_workload),
                 "config_file": str(generated_config),
@@ -437,6 +458,9 @@ def main() -> int:
                     workload_path=generated_workload,
                     badger_dir=Path(job_cfg["badgerDir"]),
                     badger_value_dir=Path(job_cfg["badgerValueDir"]),
+                    badger_prefetch_size=job_cfg["extraProperties"].get(
+                        "badger.scan_prefetch_size"
+                    ),
                 )
             )
 
@@ -476,7 +500,8 @@ def main() -> int:
         print(
             f"\n=== [{idx}/{len(jobs)}] scenario={job.scenario} "
             f"value={job.value_size} recordcount={job.recordcount} "
-            f"operationcount={job.operationcount} threadcount={job.threadcount} ==="
+            f"operationcount={job.operationcount} threadcount={job.threadcount} "
+            f"badger_prefetch_size={job.badger_prefetch_size or 'default'} ==="
         )
 
         for phase in ["load", "run"]:
@@ -497,6 +522,7 @@ def main() -> int:
                     "recordcount": job.recordcount,
                     "operationcount": job.operationcount,
                     "threadcount": job.threadcount,
+                    "badger_prefetch_size": job.badger_prefetch_size,
                     "run_dir": str(job.run_dir),
                     "config": str(job.config_path),
                     "workload": str(job.workload_path),
