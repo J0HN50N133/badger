@@ -51,6 +51,8 @@ DEFAULTS = {
     "key_prefix": "",
     "field_count": 1,
     "badger_prefetch_size": None,
+    "badger_value_log_gc_interval": None,
+    "badger_value_log_gc_discard_ratio": None,
 }
 
 
@@ -67,6 +69,8 @@ class Job:
     badger_dir: Path
     badger_value_dir: Path
     badger_prefetch_size: str | None
+    badger_value_log_gc_interval: str | None
+    badger_value_log_gc_discard_ratio: str | None
 
 
 def job_to_json(job: Job) -> Dict[str, object]:
@@ -149,6 +153,23 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULTS["badger_prefetch_size"],
         help=(
             "Set badger.scan_prefetch_size for SCAN iterator prefetching "
+            "(default: keep scenario/default setting)."
+        ),
+    )
+    parser.add_argument(
+        "--badger-value-log-gc-interval",
+        default=DEFAULTS["badger_value_log_gc_interval"],
+        help=(
+            "Set badger.value_log_gc_interval, for example 0s, 30s, or 5m "
+            "(default: keep scenario/default setting)."
+        ),
+    )
+    parser.add_argument(
+        "--badger-value-log-gc-discard-ratio",
+        type=float,
+        default=DEFAULTS["badger_value_log_gc_discard_ratio"],
+        help=(
+            "Set badger.value_log_gc_discard_ratio in (0, 1) "
             "(default: keep scenario/default setting)."
         ),
     )
@@ -329,6 +350,18 @@ def main() -> int:
     if args.badger_prefetch_size is not None and args.badger_prefetch_size <= 0:
         raise ValueError("--badger-prefetch-size must be > 0")
 
+    if (
+        args.badger_value_log_gc_interval is not None
+        and not str(args.badger_value_log_gc_interval).strip()
+    ):
+        raise ValueError("--badger-value-log-gc-interval must not be empty")
+
+    if (
+        args.badger_value_log_gc_discard_ratio is not None
+        and not 0 < args.badger_value_log_gc_discard_ratio < 1
+    ):
+        raise ValueError("--badger-value-log-gc-discard-ratio must be in (0, 1)")
+
     if len(args.key_prefix.encode("utf-8")) >= args.key_bytes:
         raise ValueError("--key-prefix byte length must be less than --key-bytes")
 
@@ -418,6 +451,14 @@ def main() -> int:
                 job_cfg["extraProperties"]["badger.scan_prefetch_size"] = str(
                     args.badger_prefetch_size
                 )
+            if args.badger_value_log_gc_interval is not None:
+                job_cfg["extraProperties"]["badger.value_log_gc_interval"] = str(
+                    args.badger_value_log_gc_interval
+                )
+            if args.badger_value_log_gc_discard_ratio is not None:
+                job_cfg["extraProperties"]["badger.value_log_gc_discard_ratio"] = str(
+                    args.badger_value_log_gc_discard_ratio
+                )
 
             job_cfg.setdefault("loadProperties", {})
             if not isinstance(job_cfg["loadProperties"], dict):
@@ -440,6 +481,12 @@ def main() -> int:
                 "badger_prefetch_size": job_cfg["extraProperties"].get(
                     "badger.scan_prefetch_size"
                 ),
+                "badger_value_log_gc_interval": job_cfg["extraProperties"].get(
+                    "badger.value_log_gc_interval"
+                ),
+                "badger_value_log_gc_discard_ratio": job_cfg["extraProperties"].get(
+                    "badger.value_log_gc_discard_ratio"
+                ),
                 "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
                 "workload_file": str(generated_workload),
                 "config_file": str(generated_config),
@@ -460,6 +507,12 @@ def main() -> int:
                     badger_value_dir=Path(job_cfg["badgerValueDir"]),
                     badger_prefetch_size=job_cfg["extraProperties"].get(
                         "badger.scan_prefetch_size"
+                    ),
+                    badger_value_log_gc_interval=job_cfg["extraProperties"].get(
+                        "badger.value_log_gc_interval"
+                    ),
+                    badger_value_log_gc_discard_ratio=job_cfg["extraProperties"].get(
+                        "badger.value_log_gc_discard_ratio"
                     ),
                 )
             )
@@ -501,7 +554,10 @@ def main() -> int:
             f"\n=== [{idx}/{len(jobs)}] scenario={job.scenario} "
             f"value={job.value_size} recordcount={job.recordcount} "
             f"operationcount={job.operationcount} threadcount={job.threadcount} "
-            f"badger_prefetch_size={job.badger_prefetch_size or 'default'} ==="
+            f"badger_prefetch_size={job.badger_prefetch_size or 'default'} "
+            f"badger_gc_interval={job.badger_value_log_gc_interval or 'default'} "
+            f"badger_gc_discard_ratio="
+            f"{job.badger_value_log_gc_discard_ratio or 'default'} ==="
         )
 
         for phase in ["load", "run"]:
@@ -523,6 +579,10 @@ def main() -> int:
                     "operationcount": job.operationcount,
                     "threadcount": job.threadcount,
                     "badger_prefetch_size": job.badger_prefetch_size,
+                    "badger_value_log_gc_interval": job.badger_value_log_gc_interval,
+                    "badger_value_log_gc_discard_ratio": (
+                        job.badger_value_log_gc_discard_ratio
+                    ),
                     "run_dir": str(job.run_dir),
                     "config": str(job.config_path),
                     "workload": str(job.workload_path),
